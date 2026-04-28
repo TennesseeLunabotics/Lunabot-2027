@@ -8,3 +8,4 @@ __pycache__/
 *.egg-info/
 frames_*.gv
 frames_*.pdf
+*.log
