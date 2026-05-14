@@ -1,8 +1,6 @@
 #include <memory>
 
 #include <cstdio>
-#include <chrono>
-#include <thread>
 #include <iostream>
 #include <joybuttons.h>
 #include <rclcpp/rclcpp.hpp>
@@ -24,20 +22,18 @@ class Teleop : public rclcpp::Node
     Teleop()
     : Node("Teleop")
     {
-      subscription_ = this->create_subscription<sensor_msgs::msg::Joy>("joy", 10, std::bind(&Teleop::topic_callback, this, _1));
-      drivetrainPub = this->create_publisher<sensor_msgs::msg::JointState>("drivetrain_cmd_vel", 10);
-      armPub = this->create_publisher<std_msgs::msg::String>("shovel/arm_cmd", 10);
-      scoopPub = this->create_publisher<std_msgs::msg::String>("shovel/scoop_cmd", 10);
-      bucketPub = this->create_publisher<std_msgs::msg::String>("shovel/bucket_cmd", 10);
-      service = this->create_service<interfaces::srv::SetTeleop>("set_teleop", [this](const std::shared_ptr<interfaces::srv::SetTeleop::Request> request,
+	subscription_ = this->create_subscription<sensor_msgs::msg::Joy>("joy", 10, std::bind(&Teleop::topic_callback, this, _1));
+	drivetrainPub = this->create_publisher<sensor_msgs::msg::JointState>("drivetrain_cmd_vel", 10);
+	armPub = this->create_publisher<std_msgs::msg::String>("shovel/arm_cmd", 10);
+	scoopPub = this->create_publisher<std_msgs::msg::String>("shovel/scoop_cmd", 10);
+	bucketPub = this->create_publisher<std_msgs::msg::String>("shovel/bucket_cmd", 10);
+	service = this->create_service<interfaces::srv::SetTeleop>("set_teleop", [this](const std::shared_ptr<interfaces::srv::SetTeleop::Request> request,
                   std::shared_ptr<interfaces::srv::SetTeleop::Response> response) { this->set_teleop(request, response); });
     }
 
   private:
     void topic_callback(const sensor_msgs::msg::Joy &raw) {
-        //Variable declare
-	bool breakout = false;
-	sensor_msgs::msg::JointState drivetrain_states;
+        sensor_msgs::msg::JointState drivetrain_states;
         drivetrain_states.velocity.resize(2);
         drivetrain_states.velocity[0] = 0;
         drivetrain_states.velocity[1] = 0;
@@ -45,170 +41,91 @@ class Teleop : public rclcpp::Node
         std_msgs::msg::String arm_state;
         std_msgs::msg::String scoop_state;
 
-        if (raw.buttons[BUTTON_LSTICK]) {
-          teleopEnabled = true;
+        if(raw.buttons[BUTTON_LSTICK]) {
+          robotState = 1;
         }
-
-        if (teleopEnabled){
-            cout << "This is working!" << endl;
-
-  	    if (!raw.buttons[BUTTON_B]) {
-              drivetrain_states.velocity[0] = (raw.axes[AXIS_LEFTY])*MOTOR_MAX;
-              drivetrain_states.velocity[1] = (raw.axes[AXIS_RIGHTY])*MOTOR_MAX;
-              cout << "Normal speed" << endl;
-            } else {
-              drivetrain_states.velocity[0] = (raw.axes[AXIS_LEFTY])*ARHAN_MODE * MOTOR_MAX;
-              drivetrain_states.velocity[1] = (raw.axes[AXIS_RIGHTY])*ARHAN_MODE * MOTOR_MAX;
-              cout << "Arhan Mode engaged" << endl;
-	    } 
-
-            if (raw.buttons[BUTTON_RBUMPER]) {
-              bucket_state.data = "f";
-            } else if (raw.axes[AXIS_RTRIGGER] > 0.5) {
-              bucket_state.data = "b";
-            }
-
-            if (raw.axes[AXIS_LTRIGGER] > 0.5) {
-              arm_state.data = "f";
-            } else if (raw.buttons[BUTTON_LBUMPER]) {
-              arm_state.data = "b";
-            }
-
-            if (raw.buttons[BUTTON_Y]) {
-              scoop_state.data = "f";
-            } else if (raw.buttons[BUTTON_X]) {
-              scoop_state.data = "b";
-            }
-/*
-	    //Test for auto dump
-	    if (raw.buttons[BUTTON_LSTICK] && raw.buttons[BUTTON_RSTICK]) {
-	      cout << "Auto Dump engaged" << endl;
-	      //Setting all of the systems to forward to dump
-	      bucket_state.data = "f";
-	      scoop_state.data = "b";
-	      arm_state.data = "f";
-	     
-	      //Publishing the values
-              //scoopPub->publish(scoop_state);
-              //armPub->publish(arm_state);
-              //bucketPub->publish(bucket_state);
-	    
-	      //Sleeps for 14 seconds
-	      //If we press any of the buttons we use to activte it, we break out
-	      for (int i = 0; i < 14 * 10; i++) {	
-		this_thread::sleep_for(chrono::milliseconds(100));
-                scoopPub->publish(scoop_state);
-                armPub->publish(arm_state);
-                bucketPub->publish(bucket_state);
-		if (raw.buttons[BUTTON_LSTICK] || raw.buttons[BUTTON_RSTICK]) {
-		  breakout = true;
-		  break;
+		if(raw.axes[AXIS_DPAD_X] < - 0.5){
+	  		robotState = 0;
 		}
-	      }
-
-	      //Resetting everything
-	      scoop_state.data = "f";
-	      bucket_state.data = "b";
-	      arm_state.data = "b";
-
-	      //Publishing the values
-              //scoopPub->publish(scoop_state);
-              //armPub->publish(arm_state);
-              //bucketPub->publish(bucket_state);
-
-	      //Wait for the systems to be sort of reset
-	      for (int i = 0; i < 13 * 10; i++) {	
-		this_thread::sleep_for(chrono::milliseconds(100));
-                scoopPub->publish(scoop_state);
-                armPub->publish(arm_state);
-                bucketPub->publish(bucket_state);
-		if (raw.buttons[BUTTON_LSTICK] || raw.buttons[BUTTON_RSTICK]) {
-		  breakout = true;
-		  break;
+		if(raw.axes[AXIS_DPAD_Y] > 0.5){
+	  		robotState = 2;
 		}
-	      }
+		switch(robotState){
+			case 1:
+            	if (!raw.buttons[BUTTON_B]) {
+	              drivetrain_states.velocity[0] = (raw.axes[AXIS_LEFTY])*MOTOR_MAX;
+    	          drivetrain_states.velocity[1] = (raw.axes[AXIS_RIGHTY])*MOTOR_MAX;
+        	    } else {
+            	  drivetrain_states.velocity[0] = (raw.axes[AXIS_LEFTY])*ARHAN_MODE * MOTOR_MAX;
+	              drivetrain_states.velocity[1] = (raw.axes[AXIS_RIGHTY])*ARHAN_MODE * MOTOR_MAX;
+    	        }
+	
+    	        if (raw.buttons[BUTTON_RBUMPER]) {
+			scoop_state.data = "f";
+	            } else if (raw.axes[AXIS_RTRIGGER] < 0) {
+    	          scoop_state.data = "b";
+        	    }
 
-	      //Go backward for 1 second
-              drivetrain_states.velocity[0] = (raw.axes[AXIS_LEFTY])*MOTOR_MAX;
-              drivetrain_states.velocity[1] = (raw.axes[AXIS_RIGHTY])*MOTOR_MAX;
-              //drivetrainPub->publish(drivetrain_states);
+	            if (raw.axes[AXIS_LTRIGGER] < 0) {
+    	          arm_state.data = "b";
+        	    } else if (raw.buttons[BUTTON_LBUMPER]) {
+            	  arm_state.data = "f";
+	            }
 
-	      for (int i = 0; i < 10; i++) {	
-		this_thread::sleep_for(chrono::milliseconds(100));
-                drivetrainPub->publish(drivetrain_states);
-		if (raw.buttons[BUTTON_LSTICK] || raw.buttons[BUTTON_RSTICK]) {
-		  breakout = true;
-		  break;
+    	        if (raw.buttons[BUTTON_Y]) {
+        	      bucket_state.data = "b";
+            	} else if (raw.buttons[BUTTON_X]) {
+	              bucket_state.data = "f";
+    	        }
+		break;
+	    case 2:
+		if(raw.axes[AXIS_DPAD_Y] < -0.5){
+		    autoState = "dumping";
 		}
-	      }
-	      
-	      breakout = true;
-	    }*/
-/*
-	    //Test for auto mine
-	    if (raw.buttons[BUTTON_A] && raw.buttons[BUTTON_B]) {
-	      cout << "Auto mine engaged" << endl;
-		
-	      //Assume the arm is at the lowest point
-	      //and the scoop is pointed to the ground (at the lowest point)
-
-	      //Move forward for 1 second
-              drivetrain_states.velocity[0] = (raw.axes[AXIS_LEFTY])*MOTOR_MAX;
-              drivetrain_states.velocity[1] = (raw.axes[AXIS_RIGHTY])*MOTOR_MAX;
-
-	      for (int i = 0; i < 10; i++) {	
-		this_thread::sleep_for(chrono::milliseconds(100));
-                drivetrainPub->publish(drivetrain_states);
-		if (raw.buttons[BUTTON_A] || raw.buttons[BUTTON_B]) {
-		  breakout = true;
-		  break;
+    		if(raw.axes[AXIS_DPAD_X] > 0.5){
+		    autoState = "mining";
 		}
-	      }
-
-	      drivetrain_states.velocity[0] = 0;
-	      drivetrain_states.velocity[1] = 0;
-              drivetrainPub->publish(drivetrain_states);
-
-	      //Rase scoop for .5 seconds
-	      scoop_state.data = "f";
-	      for (int i = 0; i < 5; i++) {
-		this_thread::sleep_for(chrono::milliseconds(100));
-                scoopPub->publish(scoop_state);
-		if (raw.buttons[BUTTON_A] || raw.buttons[BUTTON_B]) {
-		  breakout = true;
-		  break;
-		}
-	      }
-
-	      breakout = true;
-	    }
-*/
-        }
-
-	//If we breakout of the autodump/automine we don't need to have sudden movement once we breakout
-	if (!breakout) {
-          drivetrainPub->publish(drivetrain_states);
-          scoopPub->publish(scoop_state);
-          armPub->publish(arm_state);
-          bucketPub->publish(bucket_state);
+		break;
 	}
+	if(autoState == "dumping"){
+	    this->dump();
+	}else if (autoState == "mining"){
+	    this->mine();
+	}
+        drivetrainPub->publish(drivetrain_states);
+        scoopPub->publish(scoop_state);
+        armPub->publish(arm_state);
+        bucketPub->publish(bucket_state);
+    }
 
+    //Auto dump
+    //Needs to raise arms all the way, tilt scoop all the way back, and lower dump
+    //Then needs to reset itself
+    void dump(){
+	
+    }
+
+    //Auto mine
+    //Lower arm to the bottom, drive forward for a second, raise a little bit, drive forward a half second, 
+    //raise arm to max, and tilt the scoop all the way back 
+    void mine(){
+    
     }
 
     void set_teleop(const std::shared_ptr<interfaces::srv::SetTeleop::Request> request, std::shared_ptr<interfaces::srv::SetTeleop::Response> response){
     	string enabled;
-      teleopEnabled = request->teleop_enabled;
+      	robotState = request->teleop_enabled;
 
-      if(teleopEnabled) {
-        RCLCPP_INFO(get_logger(), "\033[1;35mMANUAL CONTROL:\033[0m \033[1;32mENABLED\033[0m");
-        enabled = "enabled";
-      } else {
-        RCLCPP_INFO(get_logger(), "\033[1;35mMANUAL CONTROL:\033[0m \033[1;32mDISABLED\033[0m");
-        enabled = "disabled";
-      }
+	    if(robotState == 1) {
+    		RCLCPP_INFO(get_logger(), "\033[1;35mMANUAL CONTROL:\033[0m \033[1;32mENABLED\033[0m");
+        	enabled = "enabled";
+      	} else {
+        	RCLCPP_INFO(get_logger(), "\033[1;35mMANUAL CONTROL:\033[0m \033[1;32mDISABLED\033[0m");
+        	enabled = "disabled";
+      	}
 
-      response->message = "Teleop: " + enabled;
-      response->success = true;
+      	response->message = "Teleop: " + enabled;
+      	response->success = true;
     }
 
     rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr subscription_;
@@ -217,7 +134,9 @@ class Teleop : public rclcpp::Node
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr armPub;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr scoopPub;
     rclcpp::Service<interfaces::srv::SetTeleop>::SharedPtr service;
-    bool teleopEnabled = false;
+
+    int robotState = 0;
+    string autoState = "";
 };
 
 int main(int argc, char * argv[]) {

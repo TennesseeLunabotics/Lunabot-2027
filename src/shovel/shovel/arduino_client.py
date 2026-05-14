@@ -15,7 +15,7 @@ class ArduinoClient:
 
 
     def _validate_pwm_value(self, v):
-        if not isinstance(v, int) or not (0 <= v <= 255):
+        if not (0 <= v <= 255):
             raise ValueError(f"pwm_write value must be an integer 0–255, got {v}")
 
     def digital_write(self, pin, value):
@@ -51,12 +51,14 @@ class ArduinoClient:
 
     def read_analog(self):
         self.send_command("R")
-        # time.sleep(0.1)
+        time.sleep(0.02)
 
         lines = []
         while self.ser.in_waiting:
             line = self.ser.readline().decode().strip()
             lines.append(line)
+        if(len(lines) > 0):
+            lines = lines[0].split(",")
         return lines
     
     def shutdown(self, wait_ack=False, timeout=2):
