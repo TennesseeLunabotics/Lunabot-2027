@@ -20,7 +20,7 @@ def wait_for_can0_up(context, *args, **kwargs):
     # Return the drivetrain node to be added to the launch sequence
     return [
         Node(
-            package="drivetrain",
+           package="drivetrain",
             executable="drivetrain_node",
         )
     ]
@@ -77,9 +77,9 @@ def generate_launch_description():
 
 
     ld.add_action(shovel_node)
-    ld.add_action(start_server)
-    ld.add_action(run_web_bridge)
-    ld.add_action(start_camera1)
+    #ld.add_action(start_server)
+    # ld.add_action(run_web_bridge)
+    # ld.add_action(start_camera1)
     # Add the controller node
     ld.add_action(controller_teleop_node)
 #    ld.add_action(start_cameras)

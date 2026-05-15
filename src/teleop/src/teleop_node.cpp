@@ -102,14 +102,148 @@ class Teleop : public rclcpp::Node
     //Needs to raise arms all the way, tilt scoop all the way back, and lower dump
     //Then needs to reset itself
     void dump(){
-	
+        cout << "Auto Dump Engaged" << end;
+    /* 
+        //Setting all of the systems to foward to dump
+        bucket_state.data = "f";
+        scoop_state.data = "b";
+        arm_state.data = "f";
+
+        //Sleeps for 14 seconds
+	    //If we press any of the buttons we use to activte it, we break out
+	    for (int i = 0; i < 14 * 10; i++) {	
+		  this_thread::sleep_for(chrono::milliseconds(100));
+          scoopPub->publish(scoop_state);
+          armPub->publish(arm_state);
+          bucketPub->publish(bucket_state);
+	      if (raw.axes[AXIS_DPAD_Y < 0]) {
+		    breakout = true;
+		    break;
+		  }
+	    }
+		if (breakout) break;
+		  
+	    //Go backward for 1 second
+        drivetrain_states.velocity[0] = (raw.axes[AXIS_LEFTY])*MOTOR_MAX;
+        drivetrain_states.velocity[1] = (raw.axes[AXIS_RIGHTY])*MOTOR_MAX;
+	    for (int i = 0; i < 10; i++) {	
+		  this_thread::sleep_for(chrono::milliseconds(100));
+          drivetrainPub->publish(drivetrain_states);
+		  if (raw.axes[AXIS_DPAD_Y < 0]) {
+		    breakout = true;
+	        break;
+  	      }
+	    }
+	    if (breakout) break;
+		  
+	    //Resetting everything
+	    scoop_state.data = "f";
+	    bucket_state.data = "b";
+	    arm_state.data = "b";
+	    for (int i = 0; i < 13 * 10; i++) {	
+		  this_thread::sleep_for(chrono::milliseconds(100));
+          scoopPub->publish(scoop_state);
+          armPub->publish(arm_state);
+          bucketPub->publish(bucket_state);
+		  if (raw.axes[AXIS_DPAD_Y < 0]) {
+		    breakout = true;
+		    break;
+		    }
+	    }
+	  */    
+	    //breakout = true;	
     }
 
     //Auto mine
     //Lower arm to the bottom, drive forward for a second, raise a little bit, drive forward a half second, 
     //raise arm to max, and tilt the scoop all the way back 
     void mine(){
-    
+        cout << "Auto mine engaged" << endl;
+		/*
+	      //Assume the arm is at the lowest point
+	      //and the scoop is pointed to the ground (at the lowest point)
+
+	      //Move forward for 1 second
+          drivetrain_states.velocity[0] = (raw.axes[AXIS_LEFTY])*MOTOR_MAX;
+          drivetrain_states.velocity[1] = (raw.axes[AXIS_RIGHTY])*MOTOR_MAX;
+	      for (int i = 0; i < 10; i++) {	
+		    this_thread::sleep_for(chrono::milliseconds(100));
+            drivetrainPub->publish(drivetrain_states);
+		    if (raw.buttons[BUTTON_A] || raw.buttons[BUTTON_B]) {
+		      breakout = true;
+		      break;
+		    }
+	      }
+		  if (breakout) break;
+
+          //Rase scoop for .5 seconds
+	      scoop_state.data = "f";
+	      for (int i = 0; i < 5; i++) {
+		    this_thread::sleep_for(chrono::milliseconds(100));
+            scoopPub->publish(scoop_state);
+		    if (raw.buttons[BUTTON_A] || raw.buttons[BUTTON_B]) {
+		      breakout = true;
+		      break;
+		    }
+	      }
+	      if (breakout) break;
+
+		  //Move forward for 0.5 seconds
+		  drivetrain_states.velocity[0] = (raw.axes[AXIS_LEFTY])*MOTOR_MAX;
+          drivetrain_states.velocity[1] = (raw.axes[AXIS_RIGHTY])*MOTOR_MAX;
+		  for (int i = 0; i < 5; i++) {
+		    this_thread::sleep_for(chrono::milliseconds(100));
+		    scoopPub->publish(scoop_state);
+		    if (raw.buttons[BUTTON_A] || raw.buttons[BUTTON_B]) {
+		      breakout = true;
+		      break;
+		    }
+		  }
+		  if (breakout) break;
+
+		  //Assume that the scoop is full now
+		  //Store the mined material in the dump
+
+		  //Rasie the scoop, while keeping it level
+		  arm_state.data = "f";
+		  for (int i = 0; i < 14 * 10; i++) {
+		    this_thread::sleep_for(chrono::milliseconds(100));
+		    //Halfway through, move scoop 
+			if (i >= 70 && i <= 80) {
+				scoop_state = "b";
+				scoopPub->publish(scoop_state);
+			}
+            //When at peak, dump material into dump
+			if (i >= 130) {
+				scoop_state = "f";
+				scoopPub->publish(scoop_state);
+			}
+			armPub->publish(arm_state);
+		    if (raw.buttons[BUTTON_A] || raw.buttons[BUTTON_B]) {
+		      breakout = true;
+		      break;
+		    }
+		  }
+		  if (breakout) break;
+
+		  //"Shakes" the bot to even out the material
+		  arm_state = "b";
+		  for (int i = 0; i < 13 * 10; i++) {
+            this_thread::sleep_for(chrono::milliseconds(100));
+			if (i % 2 == 0) {
+		      drivetrain_states.velocity[0] = (raw.axes[AXIS_LEFTY])*MOTOR_MAX;
+              drivetrain_states.velocity[1] = (raw.axes[AXIS_RIGHTY])*MOTOR_MAX;
+			} else {
+			  drivetrain_states.velocity[0] = 0;
+			  drivetrain_states.velocity[1] = 0;
+			}
+			armPub->publish(arm_state);
+		    drivetrainPub->publish(drivetrain_states);
+		  }
+		  if (breakout) break;
+			
+	      breakout = true;
+	    }*/         
     }
 
     void set_teleop(const std::shared_ptr<interfaces::srv::SetTeleop::Request> request, std::shared_ptr<interfaces::srv::SetTeleop::Response> response){

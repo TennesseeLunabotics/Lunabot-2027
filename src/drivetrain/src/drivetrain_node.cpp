@@ -22,7 +22,7 @@ class Drivetrain : public rclcpp::Node
       sensorPub = this->create_publisher<sensor_msgs::msg::JointState>("drivetrain_sensor_output", 10);
 
       motors[0].SetInverted(false);
-      motors[1].SetInverted(false);
+      motors[1].SetInverted(true);
       for(int i = 0; i < NUM_MOTOR; i++){
         motors[i].SetIdleMode(IdleMode::kBrake);
         motors[i].SetMotorType(MotorType::kBrushless);

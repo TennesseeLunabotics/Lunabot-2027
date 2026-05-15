@@ -3,6 +3,7 @@ ARM_DIR = [16, 17]
 ARM_ADC = [35, 32]
 
 ARM_INCHES_PER_BIT = 6 / 4096
+#ARM_P = .2 * 255 * ARM_INCHES_PER_BIT #percent output / inch disparity
 ARM_P = 4 * 255 * ARM_INCHES_PER_BIT #percent output / inch disparity
 
 SCOOP_PWM = 13
@@ -12,7 +13,7 @@ SCOOP_ADC = 33
 BUCKET_PWM = 25
 BUCKET_DIR = 23
 
-ARM_DUTY_CYCLE = 255
+ARM_DUTY_CYCLE = 200
 BUCKET_DUTY_CYCLE = 255
 SCOOP_DUTY_CYCLE = 255
 
