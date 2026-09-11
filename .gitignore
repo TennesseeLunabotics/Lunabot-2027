@@ -1,0 +1,11 @@
+/build
+/log
+/install
+__pycache__/
+*.pyc
+*.pyo
+.eggs/
+*.egg-info/
+frames_*.gv
+frames_*.pdf
+*.log

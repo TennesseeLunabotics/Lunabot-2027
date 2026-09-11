@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+
+  <title>ROS2 Web Teleop</title>
+
+  <style>
+
+    body {
+      background: #111;
+      color: white;
+      font-family: Arial;
+      text-align: center;
+    }
+
+    #camera {
+      border: 2px solid #555;
+      margin-top: 10px;
+    }
+
+    #status {
+      margin-top: 10px;
+      color: #00ff88;
+    }
+
+    #telemetry {
+      margin-top: 10px;
+      font-size: 20px;
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <h1>ROS2 Web Teleop</h1>
+
+  <div id="status">
+    Connecting...
+  </div>
+
+  <img
+    id="camera"
+    width="640"
+    height="480"
+  />
+
+  <div id="telemetry">
+    Speed: 0.00
+  </div>
+
+  <script>
+
+    // ---------------------------------------
+    // WEBSOCKET
+    // ---------------------------------------
+
+    const WS_URL =
+      `ws://${window.location.hostname}:8765`;
+
+    const ws = new WebSocket(WS_URL);
+
+    ws.binaryType = "blob";
+
+    const statusDiv =
+      document.getElementById("status");
+
+    const cam =
+      document.getElementById("camera");
+
+    const telemetryDiv =
+      document.getElementById("telemetry");
+
+    // ---------------------------------------
+    // CONNECTION EVENTS
+    // ---------------------------------------
+
+    ws.onopen = () => {
+
+      console.log("Connected");
+
+      statusDiv.innerText =
+        "Connected";
+    };
+
+    ws.onclose = () => {
+
+      console.log("Disconnected");
+
+      statusDiv.innerText =
+        "Disconnected";
+    };
+
+    // ---------------------------------------
+    // RECEIVE MESSAGES
+    // ---------------------------------------
+
+    ws.onmessage = (event) => {
+
+      // -----------------------------------
+      // CAMERA FRAME
+      // -----------------------------------
+
+      if (event.data instanceof Blob) {
+
+        const url =
+          URL.createObjectURL(event.data);
+
+        cam.src = url;
+
+        return;
+      }
+
+      // -----------------------------------
+      // JSON TELEMETRY
+      // -----------------------------------
+
+      try {
+
+        const data =
+          JSON.parse(event.data);
+
+        if (data.type === "telemetry") {
+
+          telemetryDiv.innerText =
+            `Speed: ${data.speed}`;
+        }
+
+      } catch (e) {
+
+        console.log("Bad message", e);
+      }
+    };
+
+    // ---------------------------------------
+    // SEND GAMEPAD
+    // ---------------------------------------
+
+    function sendJoy() {
+
+      const gp =
+        navigator.getGamepads()[0];
+
+      if (!gp) return;
+
+      const msg = {
+
+        axes: Array.from(gp.axes),
+
+        buttons:
+          gp.buttons.map(b => b.value)
+      };
+
+      if (ws.readyState === 1) {
+
+        ws.send(JSON.stringify(msg));
+      }
+    }
+
+    // 20 Hz joystick updates
+    setInterval(sendJoy, 50);
+
+  </script>
+
+</body>
+</html>
