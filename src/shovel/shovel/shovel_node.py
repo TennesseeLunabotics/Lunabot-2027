@@ -6,7 +6,6 @@ from std_msgs.msg import String
 
 
 class shovel_node(Node):
-
     def __init__(self):
         super().__init__('shovel_node')
 
@@ -76,15 +75,20 @@ class shovel_node(Node):
         else:
             self.arduino.pwm_write(constants.SCOOP_PWM, 0);
 
+    def shutdown(self):
+        self.arduino.shutdown()
+        GPIO.cleanup()
+
 def main(args=None):
     rclpy.init(args=args)
     shovelNode = shovel_node()
 
     rclpy.spin(shovelNode)
-    self.arduino.shutdown()
+
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
+    shovelNode.shutdown()
     shovelNode.destroy_node()
 
 

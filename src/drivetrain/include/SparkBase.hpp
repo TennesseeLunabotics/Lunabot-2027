@@ -1,11 +1,18 @@
 /**
  * @file SparkBase.hpp
- * @brief Header file for the base class for controlling REV Robotics SPARK motor controllers
+ * @brief Header file for the base class for controlling REV Robotics SPARK
+ * motor controllers
  * @author Grayson Arendt
  */
 
 #ifndef SPARKBASE_HPP
 #define SPARKBASE_HPP
+
+#include <linux/can.h>
+#include <net/if.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 #include <array>
 #include <chrono>
@@ -14,31 +21,30 @@
 #include <cstring>
 #include <limits>
 #include <map>
+#include <optional>
 #include <stdexcept>
 #include <system_error>
 #include <thread>
 #include <variant>
-#include <optional>
 
-#include <linux/can.h>
-#include <net/if.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-#include <unistd.h>
+#define RED \
+    "\033[31m"  ///< ANSI escape code for setting terminal text color to red
+#define RESET \
+    "\033[0m"  ///< ANSI escape code for resetting terminal text color to
+               ///< default
 
-#define RED "\033[31m"  ///< ANSI escape code for setting terminal text color to red
-#define RESET "\033[0m" ///< ANSI escape code for resetting terminal text color to default
-
-constexpr uint8_t PARAM_TYPE_UINT = 0x01;  ///< Parameter type for unsigned integers
-constexpr uint8_t PARAM_TYPE_FLOAT = 0x02; ///< Parameter type for floating-point numbers
-constexpr uint8_t PARAM_TYPE_BOOL = 0x03;  ///< Parameter type for boolean values
+constexpr uint8_t PARAM_TYPE_UINT =
+    0x01;  ///< Parameter type for unsigned integers
+constexpr uint8_t PARAM_TYPE_FLOAT =
+    0x02;  ///< Parameter type for floating-point numbers
+constexpr uint8_t PARAM_TYPE_BOOL =
+    0x03;  ///< Parameter type for boolean values
 
 /**
  * @brief System control commands for the SPARK controller
  */
 
-enum class SystemControl : uint32_t
-{
+enum class SystemControl : uint32_t {
     BurnFlash = 0x205FC80,
     FactoryDefaults = 0x2051D00,
     FactoryReset = 0x2051D40,
@@ -50,8 +56,7 @@ enum class SystemControl : uint32_t
 /**
  * @brief Motor control commands for the SPARK controller
  */
-enum class MotorControl : uint32_t
-{
+enum class MotorControl : uint32_t {
     Setpoint = 0x2050040,
     DutyCycle = 0x2050080,
     Velocity = 0x2050480,
@@ -65,8 +70,7 @@ enum class MotorControl : uint32_t
 /**
  * @brief Status periods for the SPARK controller
  */
-enum class Status : uint32_t
-{
+enum class Status : uint32_t {
     Period0 = 0x2051800,
     Period1 = 0x2051840,
     Period2 = 0x2051880,
@@ -77,8 +81,7 @@ enum class Status : uint32_t
 /**
  * @brief Parameters for the SPARK controller
  */
-enum class Parameter : uint32_t
-{
+enum class Parameter : uint32_t {
     kInputMode = 1,
     kMotorType = 2,
     kCommAdvance = 3,
@@ -219,17 +222,12 @@ enum class Parameter : uint32_t
 /**
  * @brief Motor type parameter
  */
-enum class MotorType : uint8_t
-{
-    kBrushed = 0,
-    kBrushless = 1
-};
+enum class MotorType : uint8_t { kBrushed = 0, kBrushless = 1 };
 
 /**
  * @brief Sensor type parameter
  */
-enum class SensorType : uint8_t
-{
+enum class SensorType : uint8_t {
     kNoSensor = 0,
     kHallSensor = 1,
     kEncoder = 2
@@ -238,8 +236,7 @@ enum class SensorType : uint8_t
 /**
  * @brief Control type parameter
  */
-enum class CtrlType : uint8_t
-{
+enum class CtrlType : uint8_t {
     kDutyCycle = 0,
     kVelocity = 1,
     kVoltage = 2,
@@ -249,30 +246,27 @@ enum class CtrlType : uint8_t
 /**
  * @brief Idle mode parameter
  */
-enum class IdleMode : uint8_t
-{
-    kCoast = 0,
-    kBrake = 1
-};
+enum class IdleMode : uint8_t { kCoast = 0, kBrake = 1 };
 
 /**
  * @class SparkBase
- * @brief A base class for controlling REV Robotics SPARK motor controllers via CAN bus
+ * @brief A base class for controlling REV Robotics SPARK motor controllers via
+ * CAN bus
  *
- * This class provides methods to configure, control, and monitor SPARK motor controllers.
- * It supports various control modes, parameter settings, and status readings.
+ * This class provides methods to configure, control, and monitor SPARK motor
+ * controllers. It supports various control modes, parameter settings, and
+ * status readings.
  */
-class SparkBase
-{
-private:
-    static int soc;                   ///< Socket descriptor for CAN communication
-    std::string interfaceName; ///< Name of the CAN interface
-    uint8_t deviceId;          ///< Device ID for the SPARK controller on the CAN bus
+class SparkBase {
+   private:
+    static int soc;             ///< Socket descriptor for CAN communication
+    std::string interfaceName;  ///< Name of the CAN interface
+    uint8_t deviceId;  ///< Device ID for the SPARK controller on the CAN bus
     struct sockaddr_can addr;  ///< Socket address for the CAN interface
-    struct ifreq ifr;          ///< Interface request structure for CAN operations
+    struct ifreq ifr;  ///< Interface request structure for CAN operations
     mutable std::map<Status,
                      std::pair<uint64_t, std::chrono::steady_clock::time_point>>
-        cachedStatus; ///< Cache for periodic status data
+        cachedStatus;  ///< Cache for periodic status data
 
     /**
      * @brief Sends a CAN frame
@@ -283,23 +277,26 @@ private:
      */
     void SendCanFrame(
         uint32_t arbitrationId, uint8_t dlc,
-        const std::array<uint8_t, 8> &data = std::array<uint8_t, 8>{}) const;
+        const std::array<uint8_t, 8>& data = std::array<uint8_t, 8>{}) const;
 
     /**
      * @brief Sends a control message to the SPARK controller
      *
-     * @param command The control command to send (either MotorControl or SystemControl)
+     * @param command The control command to send (either MotorControl or
+     * SystemControl)
      * @param commandName The control command's name
      * @param value The value associated with the control command
      * @param minValue The minimum allowed value for the command (optional)
      * @param maxValue The maximum allowed value for the command (optional)
      *
      * @throws std::invalid_argument If the command value is not finite
-     * @throws std::out_of_range If the value is outside the specified range (will default to min and max of datatype when not provided)
+     * @throws std::out_of_range If the value is outside the specified range
+     * (will default to min and max of datatype when not provided)
      */
-    void SendControlMessage(
-        std::variant<MotorControl, SystemControl> command, std::string commandName, float value, std::optional<float> minValue = std::nullopt,
-        std::optional<float> maxValue = std::nullopt) const;
+    void SendControlMessage(std::variant<MotorControl, SystemControl> command,
+                            std::string commandName, float value,
+                            std::optional<float> minValue = std::nullopt,
+                            std::optional<float> maxValue = std::nullopt) const;
 
     /**
      * @brief Reads periodic status data from the SPARK controller
@@ -315,45 +312,54 @@ private:
      * @param parameterId The ID of the parameter to set
      * @param parameterType The type of the parameter (e.g., UINT, FLOAT, BOOL)
      * @param parameterName The name of the parameter
-     * @param value The value to set the parameter to (can be float, uint32_t, uint16_t, uint8_t, or bool)
+     * @param value The value to set the parameter to (can be float, uint32_t,
+     * uint16_t, uint8_t, or bool)
      * @param minValue The minimum allowed value for the parameter (optional)
      * @param maxValue The maximum allowed value for the parameter (optional)
-     * @param customErrorMessage A custom error message to use if the value is out of range (optional)
+     * @param customErrorMessage A custom error message to use if the value is
+     * out of range (optional)
      *
-     * @throws std::invalid_argument If the parameter type is invalid or if a float value is not finite
-     * @throws std::out_of_range If the value is outside the specified range (will default to min and max of datatype when not provided)
+     * @throws std::invalid_argument If the parameter type is invalid or if a
+     * float value is not finite
+     * @throws std::out_of_range If the value is outside the specified range
+     * (will default to min and max of datatype when not provided)
      */
     void SetParameter(
-        Parameter parameterId,
-        uint8_t parameterType,
-        std::string parameterName,
+        Parameter parameterId, uint8_t parameterType, std::string parameterName,
         std::variant<float, uint32_t, uint16_t, uint8_t, bool> value,
         std::optional<float> minValue = std::nullopt,
         std::optional<float> maxValue = std::nullopt,
         std::optional<std::string> customErrorMessage = std::nullopt);
 
     /**
-     * @brief Reads the value of a specified parameter from the device via CAN communication.
+     * @brief Reads the value of a specified parameter from the device via CAN
+     * communication.
      *
-     * @param parameterId The ID of the parameter to read (enumerated by the Parameter type).
-     * @return std::variant<float, uint32_t, bool> The value of the parameter, which can be a float, uint32_t, or bool.
-     * @throws std::runtime_error If the CAN message response is not valid or if the parameter cannot be read.
+     * @param parameterId The ID of the parameter to read (enumerated by the
+     * Parameter type).
+     * @return std::variant<float, uint32_t, bool> The value of the parameter,
+     * which can be a float, uint32_t, or bool.
+     * @throws std::runtime_error If the CAN message response is not valid or if
+     * the parameter cannot be read.
      */
     std::variant<float, uint32_t, bool> ReadParameter(Parameter parameterId);
 
-public:
+   public:
     /**
      * @brief Initializes SparkBase with the specified CAN interface and ID
      *
      * @param interfaceName The name of the CAN interface (e.g., "can0")
      * @param deviceId The CAN ID of the SPARK controller (0-62)
      * @throws std::out_of_range if deviceId is greater than 62
-     * @throws std::system_error if socket creation fails, with detailed error information
-     * @throws std::runtime_error if IOCTL fails or binding to the interface fails, with detailed error information
+     * @throws std::system_error if socket creation fails, with detailed error
+     * information
+     * @throws std::runtime_error if IOCTL fails or binding to the interface
+     * fails, with detailed error information
      *
-     * @details This constructor attempts to initialize the CAN bus connection. If it fails, it will throw
-     * an exception with a detailed error message that includes possible causes and suggested solutions.
-     * Common issues that may cause exceptions include:
+     * @details This constructor attempts to initialize the CAN bus connection.
+     * If it fails, it will throw an exception with a detailed error message
+     * that includes possible causes and suggested solutions. Common issues that
+     * may cause exceptions include:
      * - Invalid device ID
      * - CAN modules not loaded
      * - System resource limitations
@@ -362,7 +368,7 @@ public:
      * - CAN bus not initialized
      * - Interface already bound to another program
      */
-    SparkBase(const std::string &interfaceName, uint8_t deviceId);
+    SparkBase(const std::string& interfaceName, uint8_t deviceId);
 
     /**
      * @brief Destructor for SparkBase
@@ -389,7 +395,8 @@ public:
     void ClearStickyFaults();
 
     /**
-     * @brief Burns the current configuration to the SPARK controller's flash memory
+     * @brief Burns the current configuration to the SPARK controller's flash
+     * memory
      */
     void BurnFlash();
 
@@ -566,13 +573,15 @@ public:
 
     /**
      * @brief Sets the motor type
-     * @param type MotorType::kBrushed for Brushed, MotorType::kBrushless for Brushless
+     * @param type MotorType::kBrushed for Brushed, MotorType::kBrushless for
+     * Brushless
      */
     void SetMotorType(MotorType type);
 
     /**
      * @brief Sets the sensor type
-     * @param sensor SensorType::kNoSensor for No Sensor, SensorType::kHallSensor for Hall Sensor, SensorType::kEncoder for Encoder
+     * @param sensor SensorType::kNoSensor for No Sensor,
+     * SensorType::kHallSensor for Hall Sensor, SensorType::kEncoder for Encoder
      */
     void SetSensorType(SensorType sensor);
 
@@ -625,7 +634,9 @@ public:
 
     /**
      * @brief Sets the control type
-     * @param type CtrlType::kDutyCycle for Duty Cycle, CtrlType::kVelocity for Velocity, CtrlType::kVoltage for Voltage, CtrlType::kPosition for Position
+     * @param type CtrlType::kDutyCycle for Duty Cycle, CtrlType::kVelocity for
+     * Velocity, CtrlType::kVoltage for Voltage, CtrlType::kPosition for
+     * Position
      */
     void SetCtrlType(CtrlType type);
 
@@ -637,7 +648,8 @@ public:
 
     /**
      * @brief Sets the closed loop voltage mode
-     * @param mode 0 for Disabled, 1 for Control Loop Voltage Output Mode, 2 for Voltage Compensation Mode
+     * @param mode 0 for Disabled, 1 for Control Loop Voltage Output Mode, 2 for
+     Voltage Compensation Mode
 
      */
     void SetClosedLoopVoltageMode(uint8_t mode);
@@ -903,7 +915,8 @@ public:
     void SetSmartMotionMaxVelocity(uint8_t slot, float maxVel);
 
     /**
-     * @brief Sets the maximum acceleration for Smart Motion in the specified slot
+     * @brief Sets the maximum acceleration for Smart Motion in the specified
+     * slot
      * @param slot The Smart Motion slot (0-3)
      * @param maxAccel The maximum acceleration
      * @throws std::invalid_argument if slot is greater than 3
@@ -911,7 +924,8 @@ public:
     void SetSmartMotionMaxAccel(uint8_t slot, float maxAccel);
 
     /**
-     * @brief Sets the minimum velocity output for Smart Motion in the specified slot
+     * @brief Sets the minimum velocity output for Smart Motion in the specified
+     * slot
      * @param slot The Smart Motion slot (0-3)
      * @param minVel The minimum velocity
      * @throws std::invalid_argument if slot is greater than 3
@@ -919,7 +933,8 @@ public:
     void SetSmartMotionMinVelOutput(uint8_t slot, float minVel);
 
     /**
-     * @brief Sets the allowed closed loop error for Smart Motion in the specified slot
+     * @brief Sets the allowed closed loop error for Smart Motion in the
+     * specified slot
      * @param slot The Smart Motion slot (0-3)
      * @param error The allowed closed loop error
      * @throws std::invalid_argument if slot is greater than 3
@@ -927,7 +942,8 @@ public:
     void SetSmartMotionAllowedClosedLoopError(uint8_t slot, float error);
 
     /**
-     * @brief Sets the acceleration strategy for Smart Motion in the specified slot
+     * @brief Sets the acceleration strategy for Smart Motion in the specified
+     * slot
      * @param slot The Smart Motion slot (0-3)
      * @param strategy The acceleration strategy
      * @throws std::invalid_argument if slot is greater than 3
@@ -935,7 +951,8 @@ public:
     void SetSmartMotionAccelStrategy(uint8_t slot, float strategy);
 
     /**
-     * @brief Sets the maximum accumulator value for the I term in the specified slot
+     * @brief Sets the maximum accumulator value for the I term in the specified
+     * slot
      * @param slot The PID slot (0-3)
      * @param maxAccum The maximum accumulator value
      * @throws std::invalid_argument if slot is greater than 3
@@ -1097,7 +1114,8 @@ public:
 
     /**
      * @brief Get the sensor type.
-     * @return Sensor type as uint8_t. (0 = No Sensor, 1 = Hall Sensor, 2 = Encoder)
+     * @return Sensor type as uint8_t. (0 = No Sensor, 1 = Hall Sensor, 2 =
+     * Encoder)
      */
     uint8_t GetSensorType();
 
@@ -1149,7 +1167,8 @@ public:
 
     /**
      * @brief Get the control type.
-     * @return Control type as uint8_t. (0 = Duty Cycle, 1 = Velocity, 2 = Voltage, 3 = Position)
+     * @return Control type as uint8_t. (0 = Duty Cycle, 1 = Velocity, 2 =
+     * Voltage, 3 = Position)
      */
     uint8_t GetCtrlType();
 
@@ -1431,7 +1450,8 @@ public:
     float GetSmartMotionMinVelOutput(uint8_t slot);
 
     /**
-     * @brief Get the allowed closed-loop error for Smart Motion in a given slot.
+     * @brief Get the allowed closed-loop error for Smart Motion in a given
+     * slot.
      * @param slot The Smart Motion slot (0-3).
      * @return Allowed closed-loop error as float.
      */
@@ -1445,7 +1465,8 @@ public:
     float GetSmartMotionAccelStrategy(uint8_t slot);
 
     /**
-     * @brief Get the maximum accumulated I term for Smart Motion in a given slot.
+     * @brief Get the maximum accumulated I term for Smart Motion in a given
+     * slot.
      * @param slot The Smart Motion slot (0-3).
      * @return Maximum I term accumulation as float.
      */
@@ -1593,4 +1614,4 @@ public:
     float GetDutyCycleZeroOffset();
 };
 
-#endif // SPARKBASE_HPP
+#endif  // SPARKBASE_HPP

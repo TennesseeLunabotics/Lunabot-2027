@@ -9,7 +9,7 @@ class PIDController:
         self.previous_error = 0
         self.integral = 0
 
-def compute(self, process_variable, dt):
+    def compute(self, process_variable, dt):
         # Calculate error
         error = self.setpoint - process_variable
 

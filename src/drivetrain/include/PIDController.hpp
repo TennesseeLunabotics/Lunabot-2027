@@ -1,6 +1,7 @@
 /**
  * @file PIDController.hpp
- * @brief Header file for the PIDController class for configuring and controlling PID for SPARK motor controllers
+ * @brief Header file for the PIDController class for configuring and
+ * controlling PID for SPARK motor controllers
  * @author Grayson Arendt
  */
 
@@ -9,28 +10,33 @@
 
 /**
  * @class PIDController
- * @brief A class for configuring and controlling PID for SPARK motor controllers
+ * @brief A class for configuring and controlling PID for SPARK motor
+ * controllers
  *
- * This class provides methods for setting and getting various PID parameters such as P, I, D, F gains,
- * and other control parameters specific to Smart Motion and position control.
+ * This class provides methods for setting and getting various PID parameters
+ * such as P, I, D, F gains, and other control parameters specific to Smart
+ * Motion and position control.
  */
-class PIDController
-{
-private:
-    SparkBase &sparkBase; ///< Reference to the associated SparkBase motor controller
+class PIDController {
+   private:
+    SparkBase&
+        sparkBase;  ///< Reference to the associated SparkBase motor controller
 
-public:
+   public:
     /**
      * @brief Construct a PIDController from a SparkBase object.
      *
      * @param base The SparkBase object associated with this PIDController.
      */
-    explicit PIDController(SparkBase &base);
+    explicit PIDController(SparkBase& base);
 
     /**
-     * @brief Set the controller reference value based on the selected control mode.
+     * @brief Set the controller reference value based on the selected control
+     * mode.
      *
-     * @param controlType CtrlType::kDutyCycle for Duty Cycle, CtrlType::kVelocity for Velocity, CtrlType::kVoltage for Voltage, CtrlType::kPosition for Position
+     * @param controlType CtrlType::kDutyCycle for Duty Cycle,
+     * CtrlType::kVelocity for Velocity, CtrlType::kVoltage for Voltage,
+     * CtrlType::kPosition for Position
      */
     void SetReference(float setpoint, CtrlType controlType);
 

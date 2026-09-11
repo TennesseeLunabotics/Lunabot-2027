@@ -1,6 +1,6 @@
-/build
-/log
-/install
+src/log
+src/install
+src/build
 __pycache__/
 *.pyc
 *.pyo
