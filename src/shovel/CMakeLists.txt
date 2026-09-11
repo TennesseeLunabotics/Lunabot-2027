@@ -20,7 +20,6 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(interfaces REQUIRED)
-find_package(robot_common REQUIRED)
 add_executable(teleop_node src/teleop_node.cpp src/Timer.cpp)
 add_executable(keyboard_node src/keyboard_node.cpp)
 

@@ -1,6 +1,7 @@
 src/log
 src/install
 src/build
+.vscode/
 __pycache__/
 *.pyc
 *.pyo

@@ -3,11 +3,13 @@
 #include <memory>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
+#include <robot_common/constants.hpp>
 
 #include "SparkMax.hpp"
 #include "constants.h"
 #include "string"
 using std::placeholders::_1;
+
 using namespace std;
 
 const int NUM_MOTOR = 2;
@@ -39,15 +41,14 @@ class Drivetrain : public rclcpp::Node {
         for (int i = 0; i < NUM_MOTOR; i++) {
             motors[i].SetVoltage(drivetrain_states.velocity[i] * MOTOR_MAX);
         }
-        // for(int i = 0; i < 4; i++){
-        //	motors[i].SetVoltage(5);
-        // }
-        // publlish sensor data
+
+        // publish sensor data
         sensor_msgs::msg::JointState motor_states;
         motor_states.name.resize(2);
         motor_states.velocity.resize(2);
         motor_states.position.resize(2);
         motor_states.effort.resize(2);
+
         for (int i = 0; i < NUM_MOTOR; i++) {
             motor_states.name[i] = locations[i];
             motor_states.velocity[i] = motors[i].GetVelocity();

@@ -12,6 +12,7 @@
 #include "constants.h"
 #include "interfaces/srv/set_teleop.hpp"
 #include "joybuttons.h"
+#include <robot_common/constants.hpp>
 
 using std::placeholders::_1;
 using namespace std;
@@ -44,6 +45,8 @@ class Teleop : public rclcpp::Node {
 
    private:
     void topic_callback(const sensor_msgs::msg::Joy::SharedPtr raw) {
+        robot_constants::Actions action(raw);
+
         drivetrain_states.velocity.resize(2);
         drivetrain_states.velocity[0] = 0;
         drivetrain_states.velocity[1] = 0;
@@ -53,15 +56,12 @@ class Teleop : public rclcpp::Node {
         scoop_state.data = "";
 
         // Mode switching
-        if (raw->buttons[BUTTON_LSTICK]) {
-            robotState = 1;
-        }
-
-        if (raw->axes[AXIS_DPAD_X] < -0.5 || raw->buttons[BUTTON_RSTICK]) {
+        
+        if (action.default_mode) {
             robotState = 0;
-        }
-
-        if (raw->axes[AXIS_DPAD_Y] > 0.5) {
+        } else if (action.mode_switch_1) {
+            robotState = 1;
+        } else if (action.mode_switch_2) {
             robotState = 2;
         }
 
@@ -83,25 +83,24 @@ class Teleop : public rclcpp::Node {
                         raw->axes[AXIS_RIGHTY] * ARHAN_MODE * MOTOR_MAX;
                 }
 
-                // Scoop
-                if (raw->buttons[BUTTON_RBUMPER]) {
-                    scoop_state.data = "f";
-                } else if (raw->axes[AXIS_RTRIGGER] < 0) {
-                    scoop_state.data = "b";
+                if (action.scoop_forward) {
+                    scoop_state.data = robot_constants::FORWARD;
+                } else if (action.scoop_backward) {
+                    scoop_state.data = robot_constants::BACKWARD;
                 }
 
                 // Arm
-                if (raw->axes[AXIS_LTRIGGER] < 0) {
-                    arm_state.data = "b";
-                } else if (raw->buttons[BUTTON_LBUMPER]) {
-                    arm_state.data = "f";
+                if (action.arm_backward) {
+                    arm_state.data = robot_constants::BACKWARD;
+                } else if (action.arm_forward) {
+                    arm_state.data = robot_constants::FORWARD;
                 }
 
                 // Bucket
-                if (raw->buttons[BUTTON_Y]) {
-                    bucket_state.data = "b";
-                } else if (raw->buttons[BUTTON_X]) {
-                    bucket_state.data = "f";
+                if (action.bucket_backward) {
+                    bucket_state.data = robot_constants::BACKWARD;
+                } else if (action.bucket_forward) {
+                    bucket_state.data = robot_constants::FORWARD;
                 }
 
                 break;
@@ -138,9 +137,9 @@ class Teleop : public rclcpp::Node {
     void dump() {
         cout << "Auto Dump Engaged" << endl;
 
-        bucket_state.data = "f";
-        scoop_state.data = "b";
-        arm_state.data = "f";
+        bucket_state.data = robot_constants::FORWARD;
+        scoop_state.data = robot_constants::BACKWARD;
+        arm_state.data = robot_constants::FORWARD;
 
         autoTime = autoTimer.elapsedSeconds();
 
@@ -172,29 +171,29 @@ class Teleop : public rclcpp::Node {
             drivetrainPub->publish(drivetrain_states);
 
         } else if (autoTime < 1.5) {
-            scoop_state.data = "f";
+            scoop_state.data = robot_constants::FORWARD;
             scoopPub->publish(scoop_state);
 
         } else if (autoTime < 2) {
             drivetrainPub->publish(drivetrain_states);
 
         } else if (autoTime < 16) {
-            arm_state.data = "f";
+            arm_state.data = robot_constants::FORWARD;
 
             if (autoTime >= 9 && autoTime <= 10) {
-                scoop_state.data = "b";
+                scoop_state.data = robot_constants::BACKWARD;
                 scoopPub->publish(scoop_state);
             }
 
             if (autoTime >= 15) {
-                scoop_state.data = "f";
+                scoop_state.data = robot_constants::FORWARD;
                 scoopPub->publish(scoop_state);
             }
 
             armPub->publish(arm_state);
 
         } else if (autoTime < 19) {
-            arm_state.data = "b";
+            arm_state.data = robot_constants::BACKWARD;
 
             direction =
                 ((fmod(autoTime, shakePeriod)) < (shakePeriod / 2.0)) ? 1 : -1;
