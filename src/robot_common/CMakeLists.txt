@@ -29,14 +29,6 @@ ament_target_dependencies(robot_common
     sensor_msgs
 )
 
-# add_executable(drivetrain_node src/drivetrain_node.cpp)
-# target_include_directories(drivetrain_node PUBLIC
-#     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-#     $<INSTALL_INTERFACE:include>
-# )
-# ament_target_dependencies(drivetrain_node rclcpp sensor_msgs sparkcan)
-# install(TARGETS drivetrain_node DESTINATION lib/${PROJECT_NAME})
-
 install(
     TARGETS robot_common
     EXPORT robot_commonTargets
