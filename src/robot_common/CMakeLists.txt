@@ -16,9 +16,12 @@ add_library(sparkcan SHARED
     src/SparkFlex.cpp
 )
 
-target_include_directories(sparkcan PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
+target_include_directories(sparkcan 
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 ament_target_dependencies(sparkcan
