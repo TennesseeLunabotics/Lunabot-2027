@@ -1,4 +1,3 @@
-#include <joybuttons.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -10,6 +9,8 @@
 #include <sensor_msgs/msg/joy.hpp>
 
 #include "constants.h"
+#include <robot_common/robot_constants.hpp>
+#include <robot_common/joybuttons.h>
 
 using namespace std::chrono_literals;
 

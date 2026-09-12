@@ -11,7 +11,6 @@
 #include "Timer.hpp"
 #include "constants.h"
 #include "interfaces/srv/set_teleop.hpp"
-#include "joybuttons.h"
 #include <robot_common/constants.hpp>
 
 using std::placeholders::_1;
