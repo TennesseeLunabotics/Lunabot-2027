@@ -43,7 +43,7 @@ add_executable(drivetrain_node src/drivetrain_node.cpp)
 #   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 #   $<INSTALL_INTERFACE:include>)
 
-ament_target_dependencies(drivetrain_node rclcpp sensor_msgs)
+ament_target_dependencies(drivetrain_node rclcpp sensor_msgs robot_common)
 # Install the library
 # install(TARGETS sparkcan
 #     EXPORT sparkcanTargets
