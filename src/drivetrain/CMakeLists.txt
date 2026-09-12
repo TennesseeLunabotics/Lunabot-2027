@@ -44,12 +44,9 @@ add_executable(drivetrain_node src/drivetrain_node.cpp)
 #   $<INSTALL_INTERFACE:include>)
 
 ament_target_dependencies(drivetrain_node rclcpp sensor_msgs robot_common)
-target_link_libraries(drivetrain_node 
-  sparkcan::sparkcan
-)
 # Install the library
-# install(TARGETS sparkcan
-#     EXPORT sparkcanTargets
+# install(TARGETS robot_common
+#     EXPORT robot_commonTargets
 #     LIBRARY DESTINATION lib
 #     ARCHIVE DESTINATION lib
 #     RUNTIME DESTINATION bin

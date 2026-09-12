@@ -9,14 +9,14 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 
-add_library(sparkcan SHARED
+add_library(robot_common SHARED
     src/PIDController.cpp
     src/SparkBase.cpp
     src/SparkMax.cpp 
     src/SparkFlex.cpp
 )
 
-target_include_directories(sparkcan 
+target_include_directories(robot_common 
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
@@ -24,7 +24,7 @@ target_include_directories(sparkcan
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-ament_target_dependencies(sparkcan
+ament_target_dependencies(robot_common
     rclcpp
     sensor_msgs
 )
@@ -38,8 +38,8 @@ ament_target_dependencies(sparkcan
 # install(TARGETS drivetrain_node DESTINATION lib/${PROJECT_NAME})
 
 install(
-    TARGETS sparkcan
-    EXPORT sparkcanTargets
+    TARGETS robot_common
+    EXPORT robot_commonTargets
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin
@@ -51,15 +51,14 @@ install(
     DESTINATION include
 )
 
-install(EXPORT sparkcanTargets
-    FILE sparkcanTargets.cmake
-    NAMESPACE sparkcan::
-    DESTINATION lib/cmake/sparkcan
+install(EXPORT robot_commonTargets
+    FILE robot_commonTargets.cmake
+    NAMESPACE robot_common::
+    DESTINATION lib/cmake/robot_common
 )
 
-ament_export_targets(sparkcanTargets)
+ament_export_targets(robot_commonTargets)
 ament_export_dependencies(rclcpp sensor_msgs)
 ament_export_include_directories(include)
-ament_export_dependencies(rclcpp sensor_msgs)
 
 ament_package()
