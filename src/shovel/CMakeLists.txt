@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(teleop VERSION 1.0 LANGUAGES CXX)
+project(shovel VERSION 1.0 LANGUAGES CXX)
 
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
