@@ -31,8 +31,8 @@ target_include_directories(keyboard_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 
-ament_target_dependencies(teleop_node rclcpp sensor_msgs interfaces)
-ament_target_dependencies(keyboard_node rclcpp sensor_msgs)
+ament_target_dependencies(teleop_node rclcpp sensor_msgs interfaces robot_common)
+ament_target_dependencies(keyboard_node rclcpp sensor_msgs robot_common)
 install(TARGETS teleop_node
   EXPORT export_${PROJECT_NAME}
   DESTINATION lib/${PROJECT_NAME})
