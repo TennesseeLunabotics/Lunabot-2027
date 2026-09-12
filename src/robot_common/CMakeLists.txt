@@ -59,5 +59,7 @@ install(EXPORT sparkcanTargets
 
 ament_export_targets(sparkcanTargets)
 ament_export_dependencies(rclcpp sensor_msgs)
+ament_export_include_directories(include)
+ament_export_dependencies(rclcpp sensor_msgs)
 
 ament_package()
