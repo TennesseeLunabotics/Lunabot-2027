@@ -5,7 +5,7 @@
  * @author Grayson Arendt
  */
 
-#include "SparkMax.hpp"
+#include "robot_common/SparkMax.hpp"
 
 SparkMax::SparkMax(const std::string& interfaceName, uint8_t deviceId)
     : SparkBase(interfaceName, deviceId) {}

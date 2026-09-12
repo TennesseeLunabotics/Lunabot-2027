@@ -5,7 +5,7 @@
  * @author Grayson Arendt
  */
 
-#include "SparkFlex.hpp"
+#include "robot_common/SparkFlex.hpp"
 
 SparkFlex::SparkFlex(const std::string& interfaceName, uint8_t deviceId)
     : SparkBase(interfaceName, deviceId) {}

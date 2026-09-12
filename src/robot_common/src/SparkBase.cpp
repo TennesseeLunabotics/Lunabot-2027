@@ -5,7 +5,7 @@
  * @author Grayson Arendt
  */
 
-#include "SparkBase.hpp"
+#include "robot_common/SparkBase.hpp"
 
 int SparkBase::soc = -1;
 

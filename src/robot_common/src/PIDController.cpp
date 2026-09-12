@@ -5,7 +5,7 @@
  * @author Grayson Arendt
  */
 
-#include "PIDController.hpp"
+#include "robot_common/PIDController.hpp"
 
 /**
  * @brief Constructor that initializes a PIDController with a reference to a
