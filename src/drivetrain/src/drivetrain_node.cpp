@@ -10,8 +10,7 @@
 
 using std::placeholders::_1;
 using namespace std;
-
-const int NUM_MOTOR = 2;
+using namespace robot_constants;
 
 class Drivetrain : public rclcpp::Node {
    public:
@@ -24,32 +23,31 @@ class Drivetrain : public rclcpp::Node {
 
         motors[0].SetInverted(false);
         motors[1].SetInverted(true);
-        for (int i = 0; i < NUM_MOTOR; i++) {
+        for (int i = 0; i < MotorMapping::NUM_MOTOR; i++) {
             motors[i].SetIdleMode(IdleMode::kBrake);
             motors[i].SetMotorType(MotorType::kBrushless);
         }
     }
 
    private:
-    SparkMax motors[NUM_MOTOR] = {SparkMax("can0", MOTOR_LEFT),
-                                  SparkMax("can0", MOTOR_RIGHT)};
-    std::string locations[NUM_MOTOR] = {"Left", "Right"};
+    SparkMax motors[MotorMapping::NUM_MOTOR] = {SparkMax("can0", MotorMapping::MOTOR_LEFT),
+                                                SparkMax("can0", MotorMapping::MOTOR_RIGHT)};
     void topic_callback(const sensor_msgs::msg::JointState& drivetrain_states) {
         // set motor values
         SparkMax::Heartbeat();
-        for (int i = 0; i < NUM_MOTOR; i++) {
-            motors[i].SetVoltage(drivetrain_states.velocity[i] * MOTOR_MAX);
+        for (int i = 0; i < MotorMapping::NUM_MOTOR; i++) {
+            motors[i].SetVoltage(drivetrain_states.velocity[i] * MotorMapping::MOTOR_MAX);
         }
 
         // publish sensor data
         sensor_msgs::msg::JointState motor_states;
-        motor_states.name.resize(2);
-        motor_states.velocity.resize(2);
-        motor_states.position.resize(2);
-        motor_states.effort.resize(2);
+        motor_states.name.resize(MotorMapping::NUM_MOTOR);
+        motor_states.velocity.resize(MotorMapping::NUM_MOTOR);
+        motor_states.position.resize(MotorMapping::NUM_MOTOR);
+        motor_states.effort.resize(MotorMapping::NUM_MOTOR);
 
-        for (int i = 0; i < NUM_MOTOR; i++) {
-            motor_states.name[i] = locations[i];
+        for (int i = 0; i < MotorMapping::NUM_MOTOR; i++) {
+            motor_states.name[i] = MotorMapping::MOTOR_LOCATIONS[i];
             motor_states.velocity[i] = motors[i].GetVelocity();
             motor_states.position[i] = motors[i].GetPosition();
             motor_states.effort[i] = motors[i].GetVoltage();

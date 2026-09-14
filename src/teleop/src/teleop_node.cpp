@@ -9,12 +9,12 @@
 #include <string>
 
 #include "Timer.hpp"
-#include "constants.h"
 #include "interfaces/srv/set_teleop.hpp"
 #include <robot_common/robot_constants.hpp>
 
 using std::placeholders::_1;
 using namespace std;
+using namespace robot_constants;
 
 class Teleop : public rclcpp::Node {
    public:
@@ -68,18 +68,18 @@ class Teleop : public rclcpp::Node {
             case 1:
 
                 // Driving
-                if (!raw->buttons[BUTTON_B]) {
+                if (!raw->buttons[ControllerMapping::BUTTON_BACK]) {
                     drivetrain_states.velocity[0] =
-                        raw->axes[AXIS_LEFTY] * MOTOR_MAX;
+                        raw->axes[ControllerMapping::AXIS_LEFTY] * MotorMapping::MOTOR_MAX;
 
                     drivetrain_states.velocity[1] =
-                        raw->axes[AXIS_RIGHTY] * MOTOR_MAX;
+                        raw->axes[ControllerMapping::AXIS_RIGHTY] * MotorMapping::MOTOR_MAX;
                 } else {
                     drivetrain_states.velocity[0] =
-                        raw->axes[AXIS_LEFTY] * ARHAN_MODE * MOTOR_MAX;
+                        raw->axes[ControllerMapping::AXIS_LEFTY] * ARHAN_MODE * MotorMapping::MOTOR_MAX;
 
                     drivetrain_states.velocity[1] =
-                        raw->axes[AXIS_RIGHTY] * ARHAN_MODE * MOTOR_MAX;
+                        raw->axes[ControllerMapping::AXIS_RIGHTY] * ARHAN_MODE * MotorMapping::MOTOR_MAX;
                 }
 
                 if (action.scoop_forward) {
@@ -106,12 +106,12 @@ class Teleop : public rclcpp::Node {
 
             case 2:
 
-                if (raw->axes[AXIS_DPAD_Y] < -0.5) {
+                if (raw->axes[ControllerMapping::AXIS_DPAD_Y] < -0.5) {
                     autoState = "dumping";
                     autoTimer.start();
                 }
 
-                if (raw->axes[AXIS_DPAD_X] > 0.5) {
+                if (raw->axes[ControllerMapping::AXIS_DPAD_X] > 0.5) {
                     autoState = "mining";
                     autoTimer.start();
                 }
@@ -148,8 +148,8 @@ class Teleop : public rclcpp::Node {
             bucketPub->publish(bucket_state);
 
         } else if (autoTime < 15) {
-            drivetrain_states.velocity[0] = -MOTOR_MAX;
-            drivetrain_states.velocity[1] = -MOTOR_MAX;
+            drivetrain_states.velocity[0] = -MOTOR_MAPPING::MOTOR_MAX;
+            drivetrain_states.velocity[1] = -MOTOR_MAPPING::MOTOR_MAX;
 
             drivetrainPub->publish(drivetrain_states);
         } else {
@@ -163,8 +163,8 @@ class Teleop : public rclcpp::Node {
 
         autoTime = autoTimer.elapsedSeconds();
 
-        drivetrain_states.velocity[0] = MOTOR_MAX;
-        drivetrain_states.velocity[1] = MOTOR_MAX;
+        drivetrain_states.velocity[0] = MOTOR_MAPPING::MOTOR_MAX;
+        drivetrain_states.velocity[1] = MOTOR_MAPPING::MOTOR_MAX;
 
         if (autoTime < 1) {
             drivetrainPub->publish(drivetrain_states);
@@ -197,9 +197,9 @@ class Teleop : public rclcpp::Node {
             direction =
                 ((fmod(autoTime, shakePeriod)) < (shakePeriod / 2.0)) ? 1 : -1;
 
-            drivetrain_states.velocity[0] = direction * MOTOR_MAX;
+            drivetrain_states.velocity[0] = direction * MOTOR_MAPPING::MOTOR_MAX;
 
-            drivetrain_states.velocity[1] = direction * MOTOR_MAX;
+            drivetrain_states.velocity[1] = direction * MOTOR_MAPPING::MOTOR_MAX;
 
             armPub->publish(arm_state);
             drivetrainPub->publish(drivetrain_states);

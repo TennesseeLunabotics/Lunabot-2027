@@ -5,9 +5,6 @@
 #include <sensor_msgs/msg/joy.hpp>
 
 namespace robot_constants {
-    const int NUM_MOTOR = 2;
-    const std::string MOTOR_LOCATIONS[NUM_MOTOR] = {"Left", "Right"};
-    
     const std::string_view FORWARD = "f";
     const std::string_view BACKWARD = "b";
 
@@ -32,6 +29,8 @@ namespace robot_constants {
     };
 
     namespace MotorMapping {
+        const int NUM_MOTOR = 2;
+        const std::string MOTOR_LOCATIONS[NUM_MOTOR] = {"Left", "Right"};
         constexpr int MOTOR_LEFT = 2;
         constexpr int MOTOR_RIGHT = 3;
         constexpr int MOTOR_MAX = 12;
