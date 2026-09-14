@@ -23,6 +23,7 @@ add_executable(drivetrain_node src/drivetrain_node.cpp)
 ament_target_dependencies(drivetrain_node 
   rclcpp 
   sensor_msgs
+  robot_common
 )
 
 target_link_libraries(drivetrain_node 
