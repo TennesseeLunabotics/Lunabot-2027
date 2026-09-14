@@ -60,13 +60,13 @@ namespace robot_constants {
             mode_switch_1 = joy_msg->buttons[BUTTON_LSTICK];
             mode_switch_2 = joy_msg->axes[AXIS_DPAD_Y] > 0.5;
 
-            scoop_forward = joy_msg->buttons[BUTTON_RB];
+            scoop_forward = joy_msg->buttons[BUTTON_RBUMPER];
             scoop_backward = joy_msg->axes[AXIS_RTRIGGER] < 0; // convert [0, 1] to boolean
 
             bucket_forward = joy_msg->buttons[BUTTON_X];
             bucket_backward = joy_msg->buttons[BUTTON_Y];
 
-            arm_forward = joy_msg->buttons[BUTTON_LB];
+            arm_forward = joy_msg->buttons[BUTTON_LBUMPER];
             arm_backward = joy_msg->axes[AXIS_LTRIGGER] < 0;
         }
     };
