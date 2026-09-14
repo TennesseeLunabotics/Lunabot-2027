@@ -5,41 +5,51 @@
 #include <sensor_msgs/msg/joy.hpp>
 
 namespace robot_constants {
-    constexpr int NUM_MOTOR = 2;
-    constexpr std::string_view[NUM_MOTOR] MOTOR_LOCATIONS = {"Left", "Right"};
+    const int NUM_MOTOR = 2;
+    const std::string MOTOR_LOCATIONS[NUM_MOTOR] = {"Left", "Right"};
     
-    constexpr std::string_view FORWARD = "f";
-    constexpr std::string_view BACKWARD = "b";
+    const std::string_view FORWARD = "f";
+    const std::string_view BACKWARD = "b";
 
-    struct ControllerMapping {
-        static constexpr int AXIS_LEFTX = 0;
-        static constexpr int AXIS_LEFTY = 1;
-        static constexpr int AXIS_RIGHTX = 3;
-        static constexpr int AXIS_RIGHTY = 4;
-        static constexpr int AXIS_DPAD_X = 6;
-        static constexpr int AXIS_DPAD_Y = 7;
+    namespace ControllerMapping {
+        constexpr int AXIS_LEFTX = 0;
+        constexpr int AXIS_LEFTY = 1;
+        constexpr int AXIS_RIGHTX = 3;
+        constexpr int AXIS_RIGHTY = 4;
+        constexpr int AXIS_DPAD_X = 6;
+        constexpr int AXIS_DPAD_Y = 7;
 
-        static constexpr int BUTTON_A = 0;
-        static constexpr int BUTTON_B = 1;
-        static constexpr int BUTTON_X = 2;
-        static constexpr int BUTTON_Y = 3;
-        static constexpr int BUTTON_LB = 4;
-        static constexpr int BUTTON_RB = 5;
-        static constexpr int BUTTON_BACK = 6;
-        static constexpr int BUTTON_START = 7;
-        static constexpr int BUTTON_LSTICK = 9;
-        static constexpr int BUTTON_RSTICK = 10;
+        constexpr int BUTTON_A = 0;
+        constexpr int BUTTON_B = 1;
+        constexpr int BUTTON_X = 2;
+        constexpr int BUTTON_Y = 3;
+        constexpr int BUTTON_LB = 4;
+        constexpr int BUTTON_RB = 5;
+        constexpr int BUTTON_BACK = 6;
+        constexpr int BUTTON_START = 7;
+        constexpr int BUTTON_LSTICK = 9;
+        constexpr int BUTTON_RSTICK = 10;
     };
 
-    struct MotorMapping {
-        static constexpr int MOTOR_LEFT = 2;
-        static constexpr int MOTOR_RIGHT = 3;
-        static constexpr int MOTOR_MAX = 12;
+    namespace MotorMapping {
+        constexpr int MOTOR_LEFT = 2;
+        constexpr int MOTOR_RIGHT = 3;
+        constexpr int MOTOR_MAX = 12;
     };
     
     struct Actions {
-        bool mode_switch;
+        bool default_mode;
+        bool mode_switch_1;
+        bool mode_switch_2;
+
         bool scoop_forward;
+        bool scoop_backward;
+
+        bool bucket_forward;
+        bool bucket_backward;
+
+        bool arm_forward;
+        bool arm_backward;
 
         Actions(const sensor_msgs::msg::Joy::SharedPtr& joy_msg) {
             using namespace ControllerMapping;
