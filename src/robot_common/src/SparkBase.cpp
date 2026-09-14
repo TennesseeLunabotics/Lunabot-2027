@@ -449,7 +449,9 @@ bool SparkBase::IsFollower() const {
 // Period 1 //
 float SparkBase::GetVelocity() const {
     uint64_t status = ReadPeriodicStatus(Status::Period1);
-    return *reinterpret_cast<const float*>(&status);
+    float float_val;
+    std::memcpy(&float_val, &status, sizeof(float_val));
+    return float_val;
 }
 
 float SparkBase::GetTemperature() const {

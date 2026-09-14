@@ -49,7 +49,7 @@ install(EXPORT robot_commonTargets
     DESTINATION lib/cmake/robot_common
 )
 
-ament_export_targets(robot_commonTargets)
+ament_export_targets(robot_commonTargets HAS_LIBRARY_TARGET)
 ament_export_dependencies(rclcpp sensor_msgs)
 ament_export_include_directories(include)
 
