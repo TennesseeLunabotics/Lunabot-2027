@@ -3,13 +3,12 @@
 #include <memory>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
-#include <robot_common/constants.hpp>
 
-#include "SparkMax.hpp"
-#include "constants.h"
+#include <robot_common/SparkMax.hpp>
+#include <robot_common/robot_constants.hpp>
 #include "string"
-using std::placeholders::_1;
 
+using std::placeholders::_1;
 using namespace std;
 
 const int NUM_MOTOR = 2;
