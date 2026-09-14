@@ -9,23 +9,26 @@ namespace robot_constants {
     const std::string_view BACKWARD = "b";
 
     namespace ControllerMapping {
-        constexpr int AXIS_LEFTX = 0;
-        constexpr int AXIS_LEFTY = 1;
-        constexpr int AXIS_RIGHTX = 3;
-        constexpr int AXIS_RIGHTY = 4;
-        constexpr int AXIS_DPAD_X = 6;
-        constexpr int AXIS_DPAD_Y = 7;
-
         constexpr int BUTTON_A = 0;
         constexpr int BUTTON_B = 1;
         constexpr int BUTTON_X = 2;
         constexpr int BUTTON_Y = 3;
-        constexpr int BUTTON_LB = 4;
-        constexpr int BUTTON_RB = 5;
         constexpr int BUTTON_BACK = 6;
+        constexpr int BUTTON_MANUFACTURER = 8;
         constexpr int BUTTON_START = 7;
         constexpr int BUTTON_LSTICK = 9;
         constexpr int BUTTON_RSTICK = 10;
+        constexpr int BUTTON_LBUMPER = 4;
+        constexpr int BUTTON_RBUMPER = 5;
+
+        constexpr int AXIS_LEFTX = 0;
+        constexpr int AXIS_LEFTY = 1;
+        constexpr int AXIS_RIGHTX = 3;
+        constexpr int AXIS_RIGHTY = 4;
+        constexpr int AXIS_LTRIGGER = 2;
+        constexpr int AXIS_RTRIGGER = 5;
+        constexpr int AXIS_DPAD_X = 6;
+        constexpr int AXIS_DPAD_Y = 7;
     };
 
     namespace MotorMapping {
