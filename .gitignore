@@ -10,3 +10,8 @@ __pycache__/
 frames_*.gv
 frames_*.pdf
 *.log
+/build
+/install
+/log
+/src/shovel/build
+/ros2

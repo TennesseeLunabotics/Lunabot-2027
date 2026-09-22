@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.11)      # updated to use FetchContent
 project(shovel VERSION 1.0 LANGUAGES CXX)
 
 if(NOT CMAKE_C_STANDARD)
@@ -13,6 +13,17 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+include(FetchContent)
+
+FetchContent_Declare(
+  JetsonGPIO
+  GIT_REPOSITORY https://github.com/pjueon/JetsonGPIO.git 
+  GIT_TAG master # change to a specific branch later after we confirm this works
+)
+
+FetchContent_MakeAvailable(JetsonGPIO)
+
+
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -20,6 +31,11 @@ find_package(robot_common REQUIRED)
 
 # executable target
 add_executable(shovel_node src/shovel_node.cpp)
+
+# external 
+target_link_libraries(shovel_node
+  JetsonGPIO::JetsonGPIO
+)
 
 # ink dependencies
 ament_target_dependencies(shovel_node 
