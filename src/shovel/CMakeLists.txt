@@ -15,26 +15,41 @@ endif()
 
 include(FetchContent)
 
+# Communication with Jetson GPIO pins
 FetchContent_Declare(
   JetsonGPIO
   GIT_REPOSITORY https://github.com/pjueon/JetsonGPIO.git 
   GIT_TAG master # change to a specific branch later after we confirm this works
 )
 
-FetchContent_MakeAvailable(JetsonGPIO)
+# Json libraries
+# - needed to be different due to how large the json lirbary is 
+# - takes in only neccessary bit required for the code
+FetchContent_Declare(
+  json
+  URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz
+)
 
+FetchContent_GetProperties(json)
+FetchContent_GetProperties(JetsonGPIO)
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(robot_common REQUIRED)
+find_package(Threads REQUIRED)
+find_package(JetsonGPIO)
+find_package(json)
 
 # executable target
-add_executable(shovel_node src/shovel_node.cpp)
+add_executable(arduino_client src/arduino_client.cpp)
 
+add_executable(shovel_node src/shovel_node.cpp)
 # external 
 target_link_libraries(shovel_node
   JetsonGPIO::JetsonGPIO
+  nlohmann_json::nlohmann_json
+  Threads::Threads
 )
 
 # ink dependencies
@@ -44,8 +59,12 @@ ament_target_dependencies(shovel_node
   robot_common
 )
 
+target_link_libraries(arduino_client PRIVATE
+  nlohmann_json::nlohmann_json
+)
+
 # Install executable
-install(TARGETS shovel_node
+install(TARGETS shovel_node arduino_client
   EXPORT export_${PROJECT_NAME}
   DESTINATION lib/${PROJECT_NAME}
 )

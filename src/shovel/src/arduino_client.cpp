@@ -1,4 +1,5 @@
 #include <sys/socket.h>
+#include <JetsonGPIO.h>
 #include "nlohmann/json.hpp"
 
 using nlohmann::json;
