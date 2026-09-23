@@ -1,9 +1,4 @@
-# Lunabot-2027
-Lunabotics repository for the 2026-2027 NASA Lunabotic compition.
-
-All code added to this Github needs to pass these requirements:
-
----
+# All code added to this Github needs to pass these requirements
 
 SSTA Software Manifesto
 Guiding principles to writing mission-critical software.
