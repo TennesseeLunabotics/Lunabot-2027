@@ -3,6 +3,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <string>
+#include <JetsonGPIO.h>
+#include "arduino_client.hpp"
 
 class ShovelNode : public rclcpp::Node {
    public:

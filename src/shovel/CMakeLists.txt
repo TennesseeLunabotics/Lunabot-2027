@@ -9,6 +9,8 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 
+set(CMAKE_EXPORT_COMPILE_COMMANDSON)
+
 # NOTE: do NOT call add_compile_options() globally before FetchContent —
 # it leaks -Wall/-Wextra/-Wpedantic into third-party targets and can
 # turn their warnings into build failures. Apply warnings per-target
@@ -82,17 +84,40 @@ find_package(Threads REQUIRED)   # -lpthread required for JetsonGPIO
 # ament_target_dependencies() call, so there's no conflict.
 add_library(shovel_external_deps INTERFACE)
 target_link_libraries(shovel_external_deps INTERFACE
-  JetsonGPIO::JetsonGPIO
-  nlohmann_json::nlohmann_json
-  Threads::Threads
+    JetsonGPIO::JetsonGPIO
+    nlohmann_json::nlohmann_json
+    Threads::Threads
+)
+
+
+# --- shared library containing arduino_client implementation ---
+# arduino_client.cpp will contain only implementations of prototypes in arduino_client.hpp.
+# the main() will be located inside of shovel_node.cpp.
+#
+# PUBLIC means: anything that links to arduino_Client_lib automatically inherits this include path
+# AND the JetsonGPIO/json linke deps below. This will allow shovel_node.cpp to access these libraries
+# when calling include "arduino_client.hpp" without shovel_node needing its own separate include_directories()
+# call for this header.
+add_library(arduino_client_lib STATIC
+    src/arduino_client.cpp
+)
+target_include_directories(arduino_client_lib PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+target_link_libraries(arduino_client_lib PUBLIC
+    JetsonGPIO::JetsonGPIO
+    nlohmann_json::nlohmann_json
 )
 
 # --- executables ---
-add_executable(arduino_client src/arduino_client.cpp)
+# arduino_client acting as thin main() wrapper around main.cpp
+add_executable(arduino_client src/main.cpp)
+target_link_libraries(arduino_client PRIVATE arduino_client_lib)
+
 add_executable(shovel_node src/shovel_node.cpp)
 
 # apply your own warning flags only to your own targets
-foreach(tgt shovel_node arduino_client)
+foreach(tgt shovel_node arduino_client arduino_client_lib)
   if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options(${tgt} PRIVATE -Wall -Wextra -Wpedantic)
   endif()
@@ -110,12 +135,7 @@ ament_target_dependencies(shovel_node
 
 # Non-ament imported targets go in via the INTERFACE bundle target
 # (keyword call, but on shovel_external_deps, not on shovel_node itself).
-target_link_libraries(shovel_node shovel_external_deps)
-
-target_link_libraries(arduino_client PRIVATE
-  JetsonGPIO::JetsonGPIO
-  nlohmann_json::nlohmann_json
-)
+target_link_libraries(shovel_node shovel_external_deps arduino_client_lib)
 
 # Install executables. No EXPORT set here since we aren't exporting
 # a CMake package config for other packages to find_package() this one.
