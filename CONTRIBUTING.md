@@ -1,4 +1,4 @@
-# All code added to this Github needs to pass these requirements
+All code added to this Github needs to pass these requirements
 
 SSTA Software Manifesto
 Guiding principles to writing mission-critical software.
