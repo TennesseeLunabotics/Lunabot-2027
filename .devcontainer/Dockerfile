@@ -137,6 +137,24 @@ RUN apt update \
     ros-humble-pcl-ros \
     && rm -rf /var/lib/apt/lists/*
 
+# clangd via LLVM's official installer
+RUN curl -fsSL https://apt.llvm.org/llvm.sh -o /tmp/llvm.sh \
+    && chmod +x /tmp/llvm.sh \
+    && /tmp/llvm.sh 18 \
+    && ln -sf /usr/bin/clangd-18 /usr/local/bin/clangd \
+    && rm -f /tmp/llvm.sh
 
+# pyright via Node.js (nodesource for a modern Node version)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt install -y --no-install-recommends nodejs \
+    && npm install -g pyright \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Neovim (static tarball)
+ARG NVIM_VERSION=v0.12.4
+RUN curl -fL https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz -o /tmp/nvim.tar.gz \
+    && tar -C /opt -xzf /tmp/nvim.tar.gz \
+    && ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim \
+    && rm -f /tmp/nvim.tar.gz
 
 CMD ["bash"]
