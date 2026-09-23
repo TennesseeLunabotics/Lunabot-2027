@@ -16,7 +16,8 @@ void shutdownAllOutputs() {
 }
 
 void setup() {
-  Serial.begin(9600);
+  /* 9600 - baudrate value, matches with shovel/src/arduino_client.hpp */
+  Serial.begin(9600); 
 
   // Setup digital pins
   for (int i = 0; i < 4; i++) {
