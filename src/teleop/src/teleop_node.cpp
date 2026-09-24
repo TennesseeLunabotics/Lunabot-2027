@@ -16,6 +16,9 @@ using std::placeholders::_1;
 using namespace std;
 using namespace robot_constants;
 
+//#TODO: make these defined variables later in constants.h
+double MOTOR_MAX = 0.5;
+double ARHAN_MODE = 0.25;
 class Teleop : public rclcpp::Node {
    public:
     Teleop() : Node("Teleop") {
@@ -148,8 +151,8 @@ class Teleop : public rclcpp::Node {
             bucketPub->publish(bucket_state);
 
         } else if (autoTime < 15) {
-            drivetrain_states.velocity[0] = -MOTOR_MAPPING::MOTOR_MAX;
-            drivetrain_states.velocity[1] = -MOTOR_MAPPING::MOTOR_MAX;
+            drivetrain_states.velocity[0] = -MotorMapping::MOTOR_MAX;
+            drivetrain_states.velocity[1] = -MotorMapping::MOTOR_MAX;
 
             drivetrainPub->publish(drivetrain_states);
         } else {
@@ -163,8 +166,8 @@ class Teleop : public rclcpp::Node {
 
         autoTime = autoTimer.elapsedSeconds();
 
-        drivetrain_states.velocity[0] = MOTOR_MAPPING::MOTOR_MAX;
-        drivetrain_states.velocity[1] = MOTOR_MAPPING::MOTOR_MAX;
+        drivetrain_states.velocity[0] = MotorMapping::MOTOR_MAX;
+        drivetrain_states.velocity[1] = MotorMapping::MOTOR_MAX;
 
         if (autoTime < 1) {
             drivetrainPub->publish(drivetrain_states);
@@ -197,9 +200,9 @@ class Teleop : public rclcpp::Node {
             direction =
                 ((fmod(autoTime, shakePeriod)) < (shakePeriod / 2.0)) ? 1 : -1;
 
-            drivetrain_states.velocity[0] = direction * MOTOR_MAPPING::MOTOR_MAX;
+            drivetrain_states.velocity[0] = direction * MotorMapping::MOTOR_MAX;
 
-            drivetrain_states.velocity[1] = direction * MOTOR_MAPPING::MOTOR_MAX;
+            drivetrain_states.velocity[1] = direction * MotorMapping::MOTOR_MAX;
 
             armPub->publish(arm_state);
             drivetrainPub->publish(drivetrain_states);
