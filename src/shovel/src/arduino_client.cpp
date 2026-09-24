@@ -1,17 +1,35 @@
+/**
+ * PROGRAM NAME: arduino_client
+ * PROGRAM DESCRIPTION: Communicates with a connected arduino/esp32 microcontroller
+ * connected to the inputted port when constructing an object of the class.
+ * DATE: 9/24/2026 
+ * SOURCES:
+ * - https://www.boost.org/doc/libs/latest/doc/html/boost_asio/overview/serial_ports.html
+ * - https://www.geeksforgeeks.org/cpp/chrono-in-c/
+ *
+ * LAST CONTRIBUTOR: James Ogle
+ * LAST CONTRIBUTOR NOTES:
+ * - check for bug in shutdown() to make sure it breaks when it as waited longer then 
+ *   the set amount
+ * - when a value being assigned to a pin is invalid, it is being skipped rather than 
+ *   causing the program to be skipped complelety
+ *   - mostly likely should log this on stdout or stderr
+ */
+
 #include "arduino_client.hpp"
 #include <boost/asio/buffer.hpp>
 #include <boost/asio/impl/read.hpp>
 #include <chrono>
 #include <thread>
 
-/* Link to Boost API documentation:
- * - https://www.boost.org/doc/libs/latest/doc/html/boost_asio/overview/serial_ports.html
- * */
-
+namespace chrono = std::chrono;
+using nlohmann::json;
+using std::string;
+using std::vector;
 
 /* note -- baudrate set automaticlly to 9600 in include/arduino_client.hpp */
 ArduinoClient::ArduinoClient(boost::asio::io_context& io,
-        const std::string& port,
+        const string& port,
         unsigned int baudrate)
     : serialPort(io)
 {
@@ -23,7 +41,7 @@ ArduinoClient::ArduinoClient(boost::asio::io_context& io,
                 );
 
         /* wait 2 seconds for Arduino/esp32 to reset */
-        std::this_thread::sleep_for(std::chrono::seconds(2));
+        std::this_thread::sleep_for(chrono::seconds(2));
     }
     catch (const boost::system::system_error& e) {
         /**
@@ -37,7 +55,7 @@ ArduinoClient::ArduinoClient(boost::asio::io_context& io,
 bool ArduinoClient::send_command(const json& message)
 {
     try {
-        std::string buffer;
+        string buffer;
         unsigned int bufSize;
 
         /**
@@ -66,25 +84,35 @@ bool ArduinoClient::validate_digital_value(const unsigned int& v)
 
 bool ArduinoClient::validate_pwm_value(const unsigned int& v)
 {
-    if (v < 0 || v > 255) {
+    /* unsigned already makes sure its not negative */
+    if (v > 255) {
         fprintf(stderr,"pwm_write value must be an integer 0–255, got %d\n", v);
         return false;
     }
     return true;
 }
 
-bool ArduinoClient::digital_write(const std::vector<unsigned int>& pin, const std::vector<unsigned int>& value)
+bool ArduinoClient::digital_write(const vector<unsigned int>& pin, const vector<unsigned int>& value)
 {
     int i;
     json message;
-    std::string buf;
+    string buf;
 
     /* first check if lengths are the same */
     if (pin.size() != value.size()) {
         fprintf(stderr,"Pins and values must have same length\n");
+        fprintf(stderr,"%4spin size: %ld, value size: %ld\n", "", pin.size(), value.size());
         return false;
     }
 
+    /**
+     * only need to check if one is empty since we already know at this point they are
+     * the same size
+     */
+    if (pin.empty()) {
+        fprintf(stderr,"Pin and Value vectors must both have values in them\n");
+        return false;
+    }
 
     for(i = 0; i < (int) pin.size(); i++) {
         /**
@@ -95,6 +123,9 @@ bool ArduinoClient::digital_write(const std::vector<unsigned int>& pin, const st
          *      "value": value[i]
          *  }
          */
+
+        /* if value is invalid, now just skipping it */
+        if (!validate_digital_value(value[i])) continue;
         message = {
             {"type", "D"},
             {"pin", pin[i]},
@@ -114,11 +145,11 @@ bool ArduinoClient::digital_write(const std::vector<unsigned int>& pin, const st
     return true;
 }
 
-bool ArduinoClient::pwm_write(const std::vector<unsigned int>& pin, const std::vector<unsigned int>& value)
+bool ArduinoClient::pwm_write(const vector<unsigned int>& pin, const vector<unsigned int>& value)
 {
     int i;
     json message;
-    std::string buf;
+    string buf;
 
     /* first check if lengths are the same */
     if (pin.size() != value.size()) {
@@ -128,6 +159,7 @@ bool ArduinoClient::pwm_write(const std::vector<unsigned int>& pin, const std::v
 
 
     for(i = 0; i < (int) pin.size(); i++) {
+        if(!validate_pwm_value(value[i])) continue;
 
         /* To understand how json formatting works here, go to method digital_write */
         message = {
@@ -143,9 +175,9 @@ bool ArduinoClient::pwm_write(const std::vector<unsigned int>& pin, const std::v
     return true;
 }
 
-std::string ArduinoClient::read_analogue()
+string ArduinoClient::read_analogue()
 {
-    std::string lines;
+    string lines;
     /**
      * boost::asio creates a object that dynamically allocates itself
      * - using this to read from the port 
@@ -166,7 +198,7 @@ std::string ArduinoClient::read_analogue()
      * Wait for esp32/arduino to receive before immediately start trying to retrieve data
      * - time: 0.02 seconds
      */
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::this_thread::sleep_for(chrono::milliseconds(200));
 
 
     /* read from the serial port until esp32/arduino is done writing */
@@ -180,18 +212,15 @@ std::string ArduinoClient::read_analogue()
     return lines;
 }
 
-/**
- * note - timeout is set to 2 in arduino_client.hpp file
- * - for reference on chrono: https://www.geeksforgeeks.org/cpp/chrono-in-c/
- */
+/* note - timeout is set to 2 in arduino_client.hpp file */
 bool ArduinoClient::shutdown(const bool& wait_ack, const unsigned int& timeout)
 {
     json cmd;
-    std::string data;
+    string data;
     /* NOTE: data allocated for by 'buf' will be read into 'data'  */
     boost::asio::dynamic_string_buffer buf(data);
-    std::chrono::seconds time;
-    std::chrono::time_point<std::chrono::steady_clock> start;
+    chrono::seconds time;
+    chrono::time_point<chrono::steady_clock> start;
 
     cmd = {
         {"type", "R"}
@@ -202,18 +231,20 @@ bool ArduinoClient::shutdown(const bool& wait_ack, const unsigned int& timeout)
      * Storing the timeout value into chrono object so it can be compared to the other
      * chrono objects in the while condition.
      */
-    time = std::chrono::seconds(timeout);
+    time = chrono::seconds(timeout);
 
 
     if (wait_ack) {
-        start = std::chrono::steady_clock::now();
+        start = chrono::steady_clock::now();
 
         /**
          * Waiting for the arduino/esp32 to shutdown
          * - this function will return false if it doesn't send acceptable
          *   message within the alloted "timeout" time
+         *
+         * TODO: check if this properly ends after trying to read for set amount of time
          */
-        while( (std::chrono::steady_clock::now() - start) < time) {
+        while( (chrono::steady_clock::now() - start) < time) {
             boost::asio::read_until(serialPort, buf, '\n');
 
             /**
@@ -221,8 +252,8 @@ bool ArduinoClient::shutdown(const bool& wait_ack, const unsigned int& timeout)
              * statements that it was successful
              * - npos -> out of bounds string position
              */
-            if (data.find("SHUTDOWN") != std::string::npos ||
-                    data.find("OK") != std::string::npos) {
+            if (data.find("SHUTDOWN") != string::npos ||
+                    data.find("OK") != string::npos) {
                 return true;
             }
         }

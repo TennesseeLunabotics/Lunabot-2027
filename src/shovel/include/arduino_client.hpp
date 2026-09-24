@@ -10,9 +10,6 @@
 #include <vector>
 #include "nlohmann/json.hpp"
 
-using nlohmann::json;
-
-
 /**
  * Documentation Example
  * @brief Calculates the area of a rectangle.
@@ -48,7 +45,7 @@ class ArduinoClient {
          * @param message Message to send to arduino/eps32 formatted in json 
          * @return bool where true is success and vice versa
          */
-        bool send_command(const json& message);
+        bool send_command(const nlohmann::json& message);
 
         /**
          * @brief writes value to the digital pins on the connected device. The
