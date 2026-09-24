@@ -1,4 +1,14 @@
 #include <Arduino.h>
+#include <ArduionJson.h>
+
+/* TODO: adjust received/sent commands to be json-style
+ * - refer to 'shovel/arduino_client.cpp' for how the json is formatted
+ *   in the messages
+ * - it will be received on this end as a string in json-style allowing
+ *   you to pump it easily into a json object
+ * - when sending or print messages, if the message is expected to be read
+ *   and parsed by the client (aka jetson) format it in json
+ */
 
 // Pin definitions
 int digitalPins[4] = {16, 17, 14, 23};
@@ -66,6 +76,7 @@ void processCommand(String cmd) {
     int val1 = analogRead(analogPins[1]);
     int val2 = analogRead(analogPins[2]);
 
+    /* TODO: adjust this to instead build out json-style string and print to stdout */
     Serial.print("A,");
     Serial.print(val0);
     Serial.print(",");
