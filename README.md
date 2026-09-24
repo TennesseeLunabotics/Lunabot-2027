@@ -1,47 +1,30 @@
 # Lunabot-2027
 Lunabotics repository for the 2026-2027 NASA Lunabotic compition.
 
-All code added to this Github needs to pass these requirements:
+## Container Setup
+This documents how to setup and run our code inside a container using Docker or Podman. Containers keeps
+ROS 2 and its dependencies isolated so your host system stays clean and not have bunch of software conflicts.
+Unlike  a traditional virtual machine (VM), containers share the host kernel aka providing near native performance.
 
----
+1. Create a workspace directory on your host machine to store the source code. This will be mounted diretly into the container.
+```
+mkdir ~/Documents/ros2
+```
+2. Run the following command below to start the container.
+   (Also, You can replace `docker` with `podman` directly without changing anything else.
+   Fedora and some other will have podman preinstalled.
+```
+docker run -it --rm \
+  --privileged \
+  --network=host \
+  -e DISPLAY=$DISPLAY \
+  -v /tmp/.X11-unix:/tmp/.X11-unix \
+  -v ~/Documents/ros2:/root/ros2_ws:Z \
+  -w /root/ros2_ws \
+  osrf/ros:humble-desktop \
+  bash -c "export FASTDDS_BUILTIN_TRANSPORTS=UDPv4 && source /opt/ros/humble/setup.bash && exec bash"
+```
 
-SSTA Software Manifesto
-Guiding principles to writing mission-critical software.
---
-## Universal Principles
-- Prefer strongly typed languages.
-- Configuration is king.
-- Check every incoming argument and return value.
-- Declare every data object at the smallest possible scope.
-- Never fail silently. Errors must bubble up until they are explicitly handled.
-- Benchmark critical paths. Always know how long functions and data flows take to complete.
-- Design the system (architecture, data flow, interfaces) before writing code.
-- Get the tooling, build system, and development environment working before writing code.
-- Write descriptive commit messages.
-- Write clear, useful comments. Comments should describe what you are doing, not how you are doing it.
-- Pick the write tool (language, framework, design principle) for the job.
-
-## Embedded Firmware (C/C++)
-- No dynamic memory allocation.
-- Give all loops a fixed upper bound (except the main control loop).
-- Enable maximum compiler warnings and treat warnings as errors.
-- No recursion.
-- Keep Interrupt Service Routines (ISR) extremely concise and avoid nested function calls.
-- No function pointers.
-- Global state must live inside well-defined structs.
-- Minimize external libraries. Only include the exact headers you need.
-- No compiler-magic or undefined behavior in core logic.
-- You must be able to explain every line of mission-critical code.
-- Unit-test all core logic.
-
-## Non-Embedded Language Specific Guidelines
-## C++
-- Leverage the Standard Template Library (STL) when possible.
-
-## Python
-- Use Python when it is the right tool. Especially when leveraging mature open-source libraries.
-- Use type hints + a type checker.
-
-## JavaScript / TypeScript
-- Prefer TypeScript.
-- Break all UI into digestible, reusable components.
+## build
+We have dedicated `build.sh` script that automatically removes old build artifacts and rebuilds from scratch.
+You may need to make script executable first with `chmod +x build.sh`
