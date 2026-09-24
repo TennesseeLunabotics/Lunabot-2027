@@ -7,6 +7,7 @@
 #include <iostream>
 #include <termios.h>
 #include <unistd.h>
+#include <vector>
 #include "nlohmann/json.hpp"
 
 using nlohmann::json;
@@ -36,6 +37,7 @@ class ArduinoClient {
          * @param baudrate controls transmission speed, receiver timing
          *                 (how often to sample voltage), and ensures sender and receiver
          *                 are on the same "tempo"
+         *                 - DEFAULT: 9600
          */
         ArduinoClient(boost::asio::io_context& io,
                 const std::string& port,
@@ -49,19 +51,20 @@ class ArduinoClient {
         bool send_command(const json& message);
 
         /**
-         * @brief writes value to the digital pins on the connected device
+         * @brief writes value to the digital pins on the connected device. The
+         * lenght of the pins and value list must be the same
          * @param pin pin number to write to
-         * @param value value writing to pin
+         * @param value list of values be written to certain number of pins
          * @return bool where true is success and vice versa
          */
-        bool digital_write(const unsigned int& pin, const unsigned int& value);
+        bool digital_write(const std::vector<unsigned int>& pin, const std::vector<unsigned int>& value);
 
         /**
          * @brief writes value to the PWM pins on the connected device
          * @param pin pin number number to write to
          * @param value value writing to pin
          */
-        bool pwm_write(const unsigned int& pin, const unsigned int& value);
+        bool pwm_write(const std::vector<unsigned int>& pin, const std::vector<unsigned int>& value);
 
         /**
          * @brief sends command to the connected device and receives the
@@ -78,12 +81,14 @@ class ArduinoClient {
          *        state. This prevents you from reading/writing to it.
          * @param wait_ack telling function whether to wait or not
          *                 (TRUE -- wait, FALSE -- don't wait)
+         *                 - DEFAULT: false
          * @param timeout amount of time function should wait for shutdown reponse
          *        before return TRUE/FALSE
+         *        - DEFAULT: 2
          * @return returns TRUE if connected devices returns shutdown response
          *         within expected timeout time and FALSE if it does not.
          */
-        bool shutdown(const bool& wait_ack, unsigned int timeout = 2);
+        bool shutdown(const bool& wait_ack = false, const unsigned int& timeout = 2);
 
         /**
          * @brief tells device to no longer be reading as "shutdown".
@@ -107,7 +112,7 @@ class ArduinoClient {
          * @param Value being written to digital pin that needs to be validated 
          * @return returns true if value is good, false if not
          */
-        bool validate_digital_value (const unsigned int& v);
+        bool validate_digital_value(const unsigned int& v);
 
         /**
          * @brief Validating the value written to the PWM pins on the connected device
@@ -115,5 +120,5 @@ class ArduinoClient {
          * @param Value being written to PWM pin that needs to be verified 
          * @return returns true if value is good, false if not
          */
-        bool validate_pwm_value (const unsigned int& v);
+        bool validate_pwm_value(const unsigned int& v);
 };
