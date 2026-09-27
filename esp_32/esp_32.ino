@@ -43,47 +43,58 @@ void setup() {
 }
 
 void processCommand(String cmd) {
+  ArduinoJson js[] = cmd;
+  JsonDocument doc;
+  String type;
 
-  if (isShutdown && !cmd.startsWith("RESET")) {
+  deserializeJson(doc, cmd);
+
+  type = doc["type"];
+
+  if (isShutdown && (type == "RESET")) {
     return;
   }
 
-  if (cmd.startsWith("D")) {
-    int pin, val;
-    sscanf(cmd.c_str(), "D,%d,%d", &pin, &val);
-    digitalWrite(pin, val);
-  }
 
-  else if (cmd.startsWith("P")) {
-    int pin, val;
-    sscanf(cmd.c_str(), "P,%d,%d", &pin, &val);
-    analogWrite(pin, val);
-  }
+  Switch(type):
+    case "D":
+      int pin, val;
+      //sscanf(cmd.c_str(), "D,%d,%d", &pin, &val);
+      pin = cmd["pin"];
+      val = cmd["value"];
+      digitalWrite(pin, val);
 
-  else if (cmd.startsWith("S")) {
-    shutdownAllOutputs();
-    isShutdown = true;
-    Serial.println("SHUTDOWN");
-  }
+    case "P":
+      int pin, val;
+      //sscanf(cmd.c_str(), "P,%d,%d", &pin, &val);
+      pin = cmd["pin"];
+      val = cmd["value"];
+      analogWrite(pin, val);
 
-  else if (cmd.startsWith("RESET")) {
-    isShutdown = false;
-    Serial.println("OK");
-  }
+    case "S":
+      shutdownAllOutputs();
+      isShutdown = true;
+      Serial.println("SHUTDOWN");
 
-  else if (cmd.startsWith("R")) {
-    int val0 = analogRead(analogPins[0]);
-    int val1 = analogRead(analogPins[1]);
-    int val2 = analogRead(analogPins[2]);
+    case "R":
+      int val0 = analogRead(analogPins[0]);
+      int val1 = analogRead(analogPins[1]);
+      int val2 = analogRead(analogPins[2]);
 
-    /* TODO: adjust this to instead build out json-style string and print to stdout */
-    Serial.print("A,");
-    Serial.print(val0);
-    Serial.print(",");
-    Serial.print(val1);
-    Serial.print(",");
-    Serial.println(val2);
-  }
+      /* TODO: adjust this to instead build out json-style string and print to stdout */
+      Serial.print("A,");
+      Serial.print(val0);
+      Serial.print(",");
+      Serial.print(val1);
+      Serial.print(",");
+      Serial.println(val2);
+
+    default:
+      if (type == "RESET") {
+        isShutdown = false;
+        Serial.println("OK");
+      }
+
 }
 
 void loop() {
@@ -98,5 +109,4 @@ void loop() {
     }
   }
 }
-
 
