@@ -10,6 +10,9 @@ ARG BASE_IMAGE=althack/ros2:humble-dev
 #################################
 FROM $BASE_IMAGE AS librealsense-builder
 
+# setting environments
+ENV DEBIAN_FRONTEND=noninteractive
+ENV ROS_WS=/opt/ros2_ws
 
 # Nav2 Installation
 WORKDIR $ROS_WS
@@ -22,8 +25,6 @@ RUN apt update \
          ros-${ROS_DISTRO}-pcl-conversions \
          ros-${ROS_DISTRO}-pcl-ros
 
-ENV DEBIAN_FRONTEND=noninteractive
-ENV ROS_WS=/opt/ros2_ws
 
 # workspace
 RUN mkdir -p $ROS_WS/src
@@ -156,5 +157,12 @@ RUN curl -fL https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/
     && tar -C /opt -xzf /tmp/nvim.tar.gz \
     && ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim \
     && rm -f /tmp/nvim.tar.gz
+
+# Installing Arduino-cli
+ARG ARDUINO_CLI_VERSION=1.1.1
+ENV BINDIR=/usr/local/bin
+RUN curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh \
+    | BINDIR="${BINDIR}" sh -s ${ARDUINO_CLI_VERSION} \
+    && arduino-cli version
 
 CMD ["bash"]
