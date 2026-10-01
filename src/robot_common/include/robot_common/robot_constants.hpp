@@ -36,7 +36,7 @@ namespace robot_constants {
         const std::string MOTOR_LOCATIONS[NUM_MOTOR] = {"Left", "Right"};
         constexpr int MOTOR_LEFT = 2;
         constexpr int MOTOR_RIGHT = 3;
-        constexpr int MOTOR_MAX = 12;
+        constexpr int MOTOR_MAX = 10;
     };
     
     struct Actions {

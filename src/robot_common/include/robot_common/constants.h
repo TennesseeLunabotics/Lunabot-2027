@@ -5,6 +5,6 @@
 // #define FRONT_RIGHT 3
 
 
-#define MOTOR_MAX 12
+#define MOTOR_MAX 10
 #define MOTOR_LEFT 3
 #define MOTOR_RIGHT 2
