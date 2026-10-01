@@ -99,14 +99,17 @@ void processCommand(String cmd) {
 
 void loop() {
   while (Serial.available()) {
-    char c = Serial.read();
+    String input = Serial.readString();
+    processCommand(input)
 
+    /*
     if (c == '\n') {
       processCommand(input);
       input = "";
     } else {
       input += c;
     }
+    */
   }
 }
 
