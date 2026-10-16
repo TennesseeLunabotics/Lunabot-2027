@@ -75,11 +75,11 @@ bool ArduinoClient::send_command(const json& message)
 
 bool ArduinoClient::validate_digital_value(const unsigned int& v)
 {
-    if (v != 0 || v != 1) {
+    if (v != 0 && v != 1) {
         fprintf(stderr,"digital_write value must be 0 or 1, got %d\n", v);
         return false;
     }
-    return false;
+    return true;
 }
 
 bool ArduinoClient::validate_pwm_value(const unsigned int& v)
