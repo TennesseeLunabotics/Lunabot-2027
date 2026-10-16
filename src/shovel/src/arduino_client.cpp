@@ -75,11 +75,11 @@ bool ArduinoClient::send_command(const json& message)
 
 bool ArduinoClient::validate_digital_value(const unsigned int& v)
 {
-    if (v != 0 || v != 1) {
+    if (v != 0 && v != 1) {
         fprintf(stderr,"digital_write value must be 0 or 1, got %d\n", v);
         return false;
     }
-    return false;
+    return true;
 }
 
 bool ArduinoClient::validate_pwm_value(const unsigned int& v)
@@ -219,11 +219,10 @@ bool ArduinoClient::shutdown(const bool& wait_ack, const unsigned int& timeout)
     string data;
     /* NOTE: data allocated for by 'buf' will be read into 'data'  */
     boost::asio::dynamic_string_buffer buf(data);
-    chrono::seconds time;
-    chrono::time_point<chrono::steady_clock> start;
+    unsigned int start;
 
     cmd = {
-        {"type", "R"}
+        {"type", "S"}
     };
     send_command(cmd);
 
@@ -231,12 +230,8 @@ bool ArduinoClient::shutdown(const bool& wait_ack, const unsigned int& timeout)
      * Storing the timeout value into chrono object so it can be compared to the other
      * chrono objects in the while condition.
      */
-    time = chrono::seconds(timeout);
-
 
     if (wait_ack) {
-        start = chrono::steady_clock::now();
-
         /**
          * Waiting for the arduino/esp32 to shutdown
          * - this function will return false if it doesn't send acceptable
@@ -244,7 +239,8 @@ bool ArduinoClient::shutdown(const bool& wait_ack, const unsigned int& timeout)
          *
          * TODO: check if this properly ends after trying to read for set amount of time
          */
-        while( (chrono::steady_clock::now() - start) < time) {
+        start = time_t(); 
+        while( (time_t() - start) < timeout) {
             boost::asio::read_until(serialPort, buf, '\n');
 
             /**

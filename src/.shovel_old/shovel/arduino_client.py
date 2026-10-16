@@ -1,13 +1,15 @@
 import serial
 import time
+import json
 
 class ArduinoClient:
     def __init__(self, port, baudrate=9600):
         self.ser = serial.Serial(port, baudrate, timeout=1)
         time.sleep(2)  # wait for Arduino reset
 
-    def send_command(self, cmd):
-        self.ser.write((cmd + "\n").encode())
+    def send_command(self, cmd:dict):
+        msg = json.dumps(cmd)
+        self.ser.write((msg + "\n").encode())
 
     def _validate_digital_value(self, v):
         if v not in (0, 1):
@@ -28,10 +30,12 @@ class ArduinoClient:
 
             for p, v in zip(pin, value):
                 self._validate_digital_value(v)
-                self.send_command(f"D,{p},{v}")
+                cmd = {"type": "D", "pin": p, "value": v}
+                self.send_command(cmd)
         else:
             self._validate_digital_value(value)
-            self.send_command(f"D,{pin},{value}")
+            cmd = {"type": "D", "pin": pin, "value": value}
+            self.send_command(cmd)
 
 
     def pwm_write(self, pin, value):
@@ -44,13 +48,16 @@ class ArduinoClient:
 
             for p, v in zip(pin, value):
                 self._validate_pwm_value(v)
-                self.send_command(f"P,{p},{v}")
+                cmd = {"type": "D", "pin": p, "value": v}
+                self.send_command(cmd)
         else:
             self._validate_pwm_value(value)
-            self.send_command(f"P,{pin},{value}")
+            cmd = {"type": "D", "pin": pin, "value": value}
+            self.send_command(cmd)
 
     def read_analog(self):
-        self.send_command("R")
+        cmd = {"type": "R"}
+        self.send_command(cmd)
         time.sleep(0.02)
 
         lines = []
@@ -62,7 +69,8 @@ class ArduinoClient:
         return lines
     
     def shutdown(self, wait_ack=False, timeout=2):
-        self.send_command("S")
+        cmd = {"type": "S"}
+        self.send_command(cmd)
         if wait_ack:
             start = time.time()
             while time.time() - start < timeout:
@@ -73,7 +81,8 @@ class ArduinoClient:
         return False
     
     def reset(self):
-        self.send_command("RESET")
+        cmd = {"type": "RESET"}
+        self.send_command(cmd)
 
 
 if __name__ == "__main__":
