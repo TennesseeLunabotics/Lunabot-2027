@@ -222,7 +222,7 @@ bool ArduinoClient::shutdown(const bool& wait_ack, const unsigned int& timeout)
     unsigned int start;
 
     cmd = {
-        {"type", "R"}
+        {"type", "S"}
     };
     send_command(cmd);
 
