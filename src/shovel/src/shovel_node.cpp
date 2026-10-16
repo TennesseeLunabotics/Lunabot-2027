@@ -9,6 +9,7 @@
  */
 
 
+#include <iterator>
 #include <memory>
 //#include <rclcpp/rclcpp.hpp>
 //#include <std_msgs/msg/string.hpp>
@@ -20,6 +21,7 @@
 #include "constants.h"
 #include <cstdlib>
 #include <math.h>
+#include <vector>
 
 using std::string;
 
@@ -53,7 +55,9 @@ void ShovelNode::arm_callback(const std_msgs::msg::String::SharedPtr msg) {
     int armDiff;
     int bitmask;
     int compVal;
-    std::vector <int> pwmValues;
+    std::vector <unsigned int> pwmValues;
+    std::vector <unsigned int> digPins;
+    std::vector<unsigned int>  pwmPins;
 
     feedback = Arduino.read_analogue();
 
@@ -70,16 +74,26 @@ void ShovelNode::arm_callback(const std_msgs::msg::String::SharedPtr msg) {
         compVal = CONSTANTS::ARM_DUTY_CYCLE;
     }
     if ( ((bool)(armDiff > 0)) ^
-            ((bool)(std::atoi(msg->data.c_str()) == CONSTANTS::ARM_BACKWARD)) )
+            ((bool)(msg->data.c_str()[0] == CONSTANTS::ARM_BACKWARD)) )
     {
-        pwmValues = {compVal, CONSTANTS::ARM_DUTY_CYCLE};
+        pwmValues = {(unsigned int)compVal, CONSTANTS::ARM_DUTY_CYCLE};
     }
     else {
-        pwmValues = {CONSTANTS::ARM_DUTY_CYCLE, compVal};
+        pwmValues = {CONSTANTS::ARM_DUTY_CYCLE, (unsigned int)compVal};
     }
-    if (std::atoi(msg->data.c_str()) == CONSTANTS::BUCKET_FORWARD) {
+
+    /* Writing Values to Arduino pins based off Arm movement command */
+    if (msg->data.c_str()[0] == CONSTANTS::ARM_FORWARD) {
+        digPins.assign(std::begin(CONSTANTS::ARM_DIR), std::end(CONSTANTS::ARM_DIR));
+        Arduino.digital_write(digPins, {1,1});
     }
-    
+    else if (msg->data.c_str()[0] == CONSTANTS::ARM_BACKWARD) {
+        digPins.assign(std::begin(CONSTANTS::ARM_DIR), std::end(CONSTANTS::ARM_DIR));
+        Arduino.digital_write(digPins, {0,0});
+    }
+    else { pwmValues = {0,0}; }
+    pwmPins.assign(std::begin(CONSTANTS::ARM_PWM), std::end(CONSTANTS::ARM_PWM));
+    Arduino.pwm_write(pwmPins, pwmValues);
 }
 
 void ShovelNode::bucket_callback(const std_msgs::msg::String::SharedPtr msg) {
