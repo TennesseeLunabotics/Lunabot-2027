@@ -61,6 +61,7 @@ void ShovelNode::arm_callback(const std_msgs::msg::String::SharedPtr msg) {
 
     feedback = Arduino.read_analogue();
 
+    /* Checking if Arduino already has values set or not */
     if (feedback.length() >= 3 && (feedback[0] == 'A')) {
         armDiff = (int) (feedback[3] - feedback[1]);
         /* Grabbing absolute value of number using bit arithmetic */
@@ -73,6 +74,8 @@ void ShovelNode::arm_callback(const std_msgs::msg::String::SharedPtr msg) {
         armDiff = 0;
         compVal = CONSTANTS::ARM_DUTY_CYCLE;
     }
+
+    /* Determing pwm values to set based off values returned in feedback */
     if ( ((bool)(armDiff > 0)) ^
             ((bool)(msg->data.c_str()[0] == CONSTANTS::ARM_BACKWARD)) )
     {
@@ -97,8 +100,15 @@ void ShovelNode::arm_callback(const std_msgs::msg::String::SharedPtr msg) {
 }
 
 void ShovelNode::bucket_callback(const std_msgs::msg::String::SharedPtr msg) {
-    (void) msg;
-    
+    if (msg->data.c_str()[0] == CONSTANTS::BUCKET_FORWARD) {
+        Arduino.pwm_write({CONSTANTS::BUCKET_PWM}, {CONSTANTS::BUCKET_DUTY_CYCLE});
+        Arduino.digital_write({CONSTANTS::BUCKET_PWM}, {1});
+    }
+    else if (msg->data.c_str()[0] == CONSTANTS::BUCKET_BACKWARD) {
+        Arduino.pwm_write({CONSTANTS::BUCKET_PWM}, {CONSTANTS::BUCKET_DUTY_CYCLE});
+        Arduino.digital_write({CONSTANTS::BUCKET_DIR}, {0});
+    }
+    else { Arduino.pwm_write({CONSTANTS::BUCKET_DIR}, {0}); }
 }
 
 void ShovelNode::scoop_callback(const std_msgs::msg::String::SharedPtr msg) {
