@@ -37,7 +37,7 @@ class ArduinoClient {
          *                 - DEFAULT: 9600
          */
         ArduinoClient(boost::asio::io_context& io,
-                const std::string& port,
+                const std::string& port = "/dev/ttyUSB0",
                 unsigned int baudrate = 9600);
 
         /**

@@ -111,7 +111,7 @@ target_link_libraries(arduino_client_lib PUBLIC
 
 # --- executables ---
 # arduino_client acting as thin main() wrapper around main.cpp
-add_executable(arduino_client src/main.cpp)
+add_executable(arduino_client src/arduino_test.cpp)
 target_link_libraries(arduino_client PRIVATE arduino_client_lib)
 
 add_executable(shovel_node src/shovel_node.cpp)
