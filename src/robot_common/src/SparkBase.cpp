@@ -6,6 +6,7 @@
  */
 
 #include "robot_common/SparkBase.hpp"
+#include <cstring>
 
 int SparkBase::soc = -1;
 
@@ -477,7 +478,9 @@ float SparkBase::GetCurrent() const {
 float SparkBase::GetPosition() const {
     uint64_t rawData = ReadPeriodicStatus(Status::Period2);
 
-    return *reinterpret_cast<const float*>(&rawData);
+    float position;
+    std::memcpy(&position, &rawData, sizeof(float));
+    return position;
 }
 
 // Period 3 //
@@ -497,13 +500,19 @@ float SparkBase::GetAnalogVelocity() const {
 
 float SparkBase::GetAnalogPosition() const {
     uint64_t status = ReadPeriodicStatus(Status::Period3);
-    return *reinterpret_cast<const float*>(&status) / 128.0f;
+    
+    float status_float;
+    std::memcpy(&status_float, &status, sizeof(float));
+    return status_float / 128.0f;
 }
 
 // Period 4 //
 float SparkBase::GetAlternateEncoderVelocity() const {
     uint64_t status = ReadPeriodicStatus(Status::Period4);
-    return *reinterpret_cast<const float*>(&status);
+    
+    float velocity;
+    std::memcpy(&velocity, &status, sizeof(float));
+    return velocity;
 }
 
 float SparkBase::GetAlternateEncoderPosition() const {
