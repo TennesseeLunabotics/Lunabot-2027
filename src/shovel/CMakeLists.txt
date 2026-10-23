@@ -9,7 +9,7 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 
-set(CMAKE_EXPORT_COMPILE_COMMANDSON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # NOTE: do NOT call add_compile_options() globally before FetchContent —
 # it leaks -Wall/-Wextra/-Wpedantic into third-party targets and can
