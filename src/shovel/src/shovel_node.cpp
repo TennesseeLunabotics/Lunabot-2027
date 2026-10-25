@@ -25,7 +25,7 @@
 #include <string>
 #include <JetsonGPIO.h>
 #include "shovel_node.hpp" /* includes necessary ROS libraries and Arduino Header */
-#include "constants.h"
+#include "constants.hpp"
 #include <vector>
 
 using std::string;
