@@ -52,18 +52,18 @@ ArduinoClient::ArduinoClient(boost::asio::io_context& io,
     }
 }
 
-bool ArduinoClient::send_command(const json& message)
+bool ArduinoClient::send_command(const string& message)
 {
     try {
         string buffer;
         unsigned int bufSize;
 
         /**
-         * converting json object to string then writing sending to
-         * connected device on port
-         * */
-        buffer = message.dump();
-        bufSize = buffer.size() + 8;
+         * Converting message to c-style array to write direct
+         * bytes to the esp32
+         **/
+        buffer = message.c_str();
+        bufSize = message.size() + 8;
         boost::asio::write(serialPort, boost::asio::buffer(buffer, bufSize));
     }
     catch (const boost::system::system_error& e) {
@@ -95,8 +95,8 @@ bool ArduinoClient::validate_pwm_value(const unsigned int& v)
 bool ArduinoClient::digital_write(const vector<unsigned int>& pin, const vector<unsigned int>& value)
 {
     int i;
-    json message;
-    string buf;
+    char buf[128];
+    string message;
 
     /* first check if lengths are the same */
     if (pin.size() != value.size()) {
@@ -115,28 +115,13 @@ bool ArduinoClient::digital_write(const vector<unsigned int>& pin, const vector<
     }
 
     for(i = 0; i < (int) pin.size(); i++) {
-        /**
-         * Creating a json message to send, this code creates a messaage format like:
-         *  {
-         *      "type": "D",
-         *      "pin": pin[i],
-         *      "value": value[i]
-         *  }
-         */
 
-        /* if value is invalid, now just skipping it */
-        if (!validate_digital_value(value[i])) continue;
-        message = {
-            {"type", "D"},
-            {"pin", pin[i]},
-            {"value", value[i]}
-        };
+        /* if value is invalid, skip it*/
+        if(!validate_digital_value(value[i])) continue;
 
-        /**
-         * to access the values if using the same nlohmann/json library, you would do:
-         * - message[type] will return "D" in this case 
-         *
-         */ 
+        /* 128 - char buffer going into the string */
+        sscanf(buf, "D,%d,%d", &pin[i], &value[i]);
+        message = buf;
        
         /* simply going to send the message */
         send_command(message);
@@ -148,8 +133,8 @@ bool ArduinoClient::digital_write(const vector<unsigned int>& pin, const vector<
 bool ArduinoClient::pwm_write(const vector<unsigned int>& pin, const vector<unsigned int>& value)
 {
     int i;
-    json message;
-    string buf;
+    string message;
+    char buf[128];
 
     /* first check if lengths are the same */
     if (pin.size() != value.size()) {
@@ -161,14 +146,10 @@ bool ArduinoClient::pwm_write(const vector<unsigned int>& pin, const vector<unsi
     for(i = 0; i < (int) pin.size(); i++) {
         if(!validate_pwm_value(value[i])) continue;
 
-        /* To understand how json formatting works here, go to method digital_write */
-        message = {
-            {"type", "D"},
-            {"pin", pin[i]},
-            {"value", value[i]}
-        };
+        /* sscanf - creates a formatted string */
+        sscanf(buf, "D,%d,%d", &pin[i], &value[i]);
+        message = buf;
       
-        /* simply going to send the message */
         send_command(message);
     }
 
@@ -177,6 +158,7 @@ bool ArduinoClient::pwm_write(const vector<unsigned int>& pin, const vector<unsi
 
 string ArduinoClient::read_analogue()
 {
+    string cmd;
     string lines;
     /**
      * boost::asio creates a object that dynamically allocates itself
@@ -184,14 +166,10 @@ string ArduinoClient::read_analogue()
      * - NOTE: data will be read into 'lines' variable
      */
     boost::asio::dynamic_string_buffer buf(lines); 
-    json cmd;
     size_t bytesRead;
-    
-    cmd = {
-        {"type", "R"}
-    };
 
     /* Telling esp32/arduino to print out pins & values on stdout */
+    cmd = "R";
     send_command(cmd);
 
     /**
@@ -215,15 +193,13 @@ string ArduinoClient::read_analogue()
 /* note - timeout is set to 2 in arduino_client.hpp file */
 bool ArduinoClient::shutdown(const bool& wait_ack, const unsigned int& timeout)
 {
-    json cmd;
     string data;
+    string cmd;
     /* NOTE: data allocated for by 'buf' will be read into 'data'  */
     boost::asio::dynamic_string_buffer buf(data);
     unsigned int start;
 
-    cmd = {
-        {"type", "S"}
-    };
+    cmd = "S";
     send_command(cmd);
 
     /**
@@ -266,12 +242,9 @@ bool ArduinoClient::shutdown(const bool& wait_ack, const unsigned int& timeout)
 
 void ArduinoClient::reset()
 {
-    json cmd;
+    string cmd;
 
-    cmd = {
-        {"type", "RESET"}
-    };
-
+    cmd = "RESET";
     send_command(cmd);
 }
 
