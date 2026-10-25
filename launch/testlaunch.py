@@ -36,15 +36,15 @@ def generate_launch_description():
     )
 
     start_server = ExecuteProcess(
-        cmd=["python", "-m", "http.server", "8080", "-d" "/home/lunabot/lunabot-2026/controller"],
+        cmd=["python", "-m", "http.server", "8080", "-d" "/home/lunabot/lunabot-2027/controller"],
         output="screen",    )
     
     run_web_bridge = ExecuteProcess(
-        cmd=["python", "/home/lunabot/lunabot-2026/controller/web_joy_bridge.py"],
+        cmd=["python", "/home/lunabot/lunabot-2027/controller/web_joy_bridge.py"],
         output="screen",)
 
     start_camera1 = Node(package="usb_cam", executable="usb_cam_node_exe",
-        arguments=['--ros-args', '--params-file' , '/home/lunabot/lunabot-2026/controller/params_1.yaml'], 
+        arguments=['--ros-args', '--params-file' , '/home/lunabot/lunabot-2027/controller/params_1.yaml'], 
         remappings=[('__ns','/usb_cam_0')])
     """
     start_cameras = ExecuteProcess(
@@ -65,7 +65,7 @@ def generate_launch_description():
         cmd=[
             "bash",
             "-c",
-            "/home/lunabot/lunabot-2026/src/drivetrain/canable_start.sh",
+            "/home/lunabot/lunabot-2027/src/drivetrain/canable_start.sh",
         ],
         output="screen",
     )
