@@ -9,7 +9,7 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 
-set(CMAKE_EXPORT_COMPILE_COMMANDSON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # NOTE: do NOT call add_compile_options() globally before FetchContent —
 # it leaks -Wall/-Wextra/-Wpedantic into third-party targets and can
@@ -61,7 +61,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(robot_common REQUIRED)
+find_package(interfaces REQUIRED)
 find_package(Threads REQUIRED)   # -lpthread required for JetsonGPIO
 
 # Do NOT also call find_package(JetsonGPIO) / find_package(json) here --
@@ -130,7 +130,7 @@ endforeach()
 ament_target_dependencies(shovel_node
   rclcpp
   sensor_msgs
-  robot_common
+  interfaces 
 )
 
 # Non-ament imported targets go in via the INTERFACE bundle target
