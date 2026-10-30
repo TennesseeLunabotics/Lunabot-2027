@@ -10,24 +10,32 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(robot_common REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(PCL REQUIRED)
-find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
+
+include_directories(
+  ${PCL_INCLUDE_DIRS} 
+  include
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+link_directories(
+  ${PCL_LIBRARY_DIRS}
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/${CMAKE_SYSTEM_PROCESSOR}
+)
+
+add_definitions(${PCL_DEFINITIONS})
 
 add_executable(lidar_node src/lidar_node.cpp)
 
-target_include_directories(lidar_node
-    PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
+target_link_libraries( lidar_node 
+  ${Boost_SYSTEM_LIBRARY}
+  ${PCL_LIBRARIES}
+  libunilidar_sdk2.a
 )
-
-target_include_directories(lidar_node PUBLIC ${PCL_INCLUDE_DIRS})
-target_link_libraries(lidar_node ${PCL_LIBRARIES})
 
 install(
     DIRECTORY include/ 
@@ -40,8 +48,8 @@ ament_target_dependencies(lidar_node
   sensor_msgs
   robot_common
   pcl_conversions # required by lidar sdk
-  tf2
   tf2_ros
+  geometry_msgs
 )
 
 # Install the executable so ROS 2 can find it using `ros2 run lidar lidar_node`

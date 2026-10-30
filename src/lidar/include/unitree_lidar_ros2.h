@@ -132,12 +132,12 @@ UnitreeLidarSDKNode::UnitreeLidarSDKNode(const rclcpp::NodeOptions &options)
 
     if (initialize_type_ == 1)
     {
-        lsdk_->initialize(serial_port_, baudrate_,
+        lsdk_->initializeSerial(serial_port_, baudrate_,
                                 cloud_scan_num_, use_system_timestamp_, range_min_, range_max_);
     }
     else if (initialize_type_ == 2)
     {
-        lsdk_->initializeUDP(18, lidar_port_, lidar_ip_, local_port_, local_ip_,
+        lsdk_->initializeUDP(lidar_port_, lidar_ip_, local_port_, local_ip_,
                              cloud_scan_num_, use_system_timestamp_, range_min_, range_max_);
     }
     else
@@ -146,7 +146,7 @@ UnitreeLidarSDKNode::UnitreeLidarSDKNode(const rclcpp::NodeOptions &options)
         exit(0);
     }
 
-    lsdk_->setLidarWorkingMode(work_mode_);
+    lsdk_->setLidarWorkMode(work_mode_);
 
     // ROS2
     broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(*this);
@@ -222,7 +222,7 @@ void UnitreeLidarSDKNode::timer_callback()
     {
         // RCLCPP_INFO(this->get_logger(), "POINT_CLOUD");
         PointCloudUnitree cloud;
-        if (lsdk_->getCloud(cloud))
+        if (lsdk_->getPointCloud(cloud))
         {
             transformUnitreeCloudToPCL(cloud, cloudOut);
 
