@@ -109,6 +109,8 @@ target_link_libraries(arduino_client_lib PUBLIC
     nlohmann_json::nlohmann_json
 )
 
+target_compile_options(JetsonGPIO PRIVATE "-w")
+
 # --- executables ---
 # arduino_client acting as thin main() wrapper around main.cpp
 add_executable(arduino_client src/arduino_test.cpp)
