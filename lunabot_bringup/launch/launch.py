@@ -3,8 +3,11 @@ import subprocess
 import time
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import ExecuteProcess, IncludeLaunchDescription, OpaqueFunction
+from launch.actions import (DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription,
+                            OpaqueFunction)
+from launch.conditions import IfCondition, UnlessCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 # CONFIG
@@ -98,11 +101,30 @@ def generate_launch_description():
         output="screen",
     )
 
+    # use_odometry:=true runs the odometry package, which publishes the real
+    # odom -> base_link, instead of the fixed one below. Only one may run at a time.
+    # Leave it false until the REQUIRED values in src/odometry/launch/odometry.launch.py
+    # are filled in, since the odometry nodes won't start before then.
+    use_odometry = LaunchConfiguration('use_odometry')
+    use_odometry_arg = DeclareLaunchArgument(
+        'use_odometry',
+        default_value='false',
+        description='Run the odometry package instead of a fixed odom -> base_link'
+    )
+
     static_tf_node = Node(
         package='tf2_ros',
         executable='static_transform_publisher',
         name='static_transform_publisher',
-        arguments=create_static_tf_args(STATIC_TF_CONFIG)
+        arguments=create_static_tf_args(STATIC_TF_CONFIG),
+        condition=UnlessCondition(use_odometry)
+    )
+
+    odometry_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(get_package_share_directory('odometry'), 'launch', 'odometry.launch.py')
+        ),
+        condition=IfCondition(use_odometry)
     )
 
     lidar_node = Node(
@@ -130,11 +152,13 @@ def generate_launch_description():
 
     ld = LaunchDescription()
 
+    ld.add_action(use_odometry_arg)
     ld.add_action(shovel_node)
     ld.add_action(teleop_node)
     ld.add_action(OpaqueFunction(function=wait_for_can0_up))
 
     ld.add_action(static_tf_node)
+    ld.add_action(odometry_launch)
     ld.add_action(lidar_node)
     ld.add_action(cloud_to_scan_node)
     ld.add_action(slam_node)

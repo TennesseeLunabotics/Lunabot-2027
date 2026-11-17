@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>odometry</name>
+  <version>0.1.0</version>
+  <description>
+    Odometry for the tracked robot: KISS-ICP LiDAR odometry, the LiDAR's IMU gyro
+    and the drive encoders, blended by an EKF that publishes the odom to base_link transform.
+  </description>
+  <maintainer email="ros@todo.todo">Tennessee Lunabotics</maintainer>
+  <license>TODO: License declaration</license>
+
+  <!-- setup.sh installs these with `rosdep install`. -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>nav_msgs</depend>
+
+  <exec_depend>robot_localization</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>ament_index_python</exec_depend>
+  <!-- Also needs kiss_icp, which rosdep can't install: .devcontainer/Dockerfile builds it. -->
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
