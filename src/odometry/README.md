@@ -4,8 +4,8 @@ Works out how far the Lunabot has moved and turned by blending three sensors, so
 This process of merging the data should mean we will always have reliable data for where the Lunabot is.
 (Based off of Damien's "unitree_lidar" branch)
 
-***** NOTE: There are a lot of constants and measurements required from the robot, 
-fill these in when they are found (locations listed below). *****
+*****NOTE: There are a lot of constants and measurements required from the robot, 
+fill these in when they are found (locations listed below).*****
 
 Node - Job
 
@@ -44,7 +44,7 @@ Start everything with `ros2 launch odometry odometry.launch.py`.
   (`lunabot_bringup/launch/launch.py`) runs this package with `use_odometry:=true`, which also
   turns off its fixed `odom -> base_link`; it defaults to false until the REQUIRED values are set.
   *****`lunabot_bringup/launch/lidar.launch.py` still always starts a fixed `odom -> base_link`, so
-  don't run it together with this package. *****
+  don't run it together with this package.*****
 - Don't use TF for lidar mount: driver's lidar frame moves with the IMU's orientation estimate,
   so the lidar relay uses measured mount values instead.
 
