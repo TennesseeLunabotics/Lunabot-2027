@@ -11,8 +11,7 @@ from rclpy.executors import MultiThreadedExecutor
 
 from sensor_msgs.msg import Joy
 from sensor_msgs.msg import Image, CompressedImage
-from std_msgs.msg import Float32
-
+from std_msgs.msg import Float32, String
 from cv_bridge import CvBridge
 
 
@@ -35,6 +34,7 @@ class WebBridge(Node):
 
         self.latest_frame = None
         self.speed = 0.0
+        self.camera_log = ""
 
         self.create_subscription(
             CompressedImage,
@@ -49,6 +49,13 @@ class WebBridge(Node):
             self.speed_callback,
             10
         )
+
+        self.create_subscription(
+            String,
+            '/camera_log',
+            self.camera_log_callback,
+            10
+)
 
     # ---------------------------------------------------
     # JOYSTICK PUBLISH
@@ -118,6 +125,9 @@ class WebBridge(Node):
     def speed_callback(self, msg):
 
         self.speed = round(msg.data, 2)
+    def camera_log_callback(self, msg):
+
+        self.camera_log = msg.data
 
 
 # -------------------------------------------------------
@@ -204,6 +214,7 @@ async def telemetry_loop():
             telemetry = {
                 "type": "telemetry",
                 "speed": node.speed
+                "camera_log": node.camera_log
             }
 
             msg = json.dumps(telemetry)

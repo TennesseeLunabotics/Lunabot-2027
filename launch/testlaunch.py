@@ -43,6 +43,11 @@ def generate_launch_description():
         cmd=["python", "/home/lunabot/lunabot-2026/controller/web_joy_bridge.py"],
         output="screen",)
 
+    start_logging = Node(
+            package="logging",
+            executable="logging_node",
+    )
+
     start_camera1 = Node(package="usb_cam", executable="usb_cam_node_exe",
         arguments=['--ros-args', '--params-file' , '/home/lunabot/lunabot-2026/controller/params_1.yaml'], 
         remappings=[('__ns','/usb_cam_0')])
@@ -80,6 +85,7 @@ def generate_launch_description():
     #ld.add_action(start_server)
     # ld.add_action(run_web_bridge)
     # ld.add_action(start_camera1)
+    # ld.add_action(start_logging)
     # Add the controller node
     ld.add_action(controller_teleop_node)
 #    ld.add_action(start_cameras)
