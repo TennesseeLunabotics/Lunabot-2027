@@ -165,4 +165,19 @@ RUN curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/inst
     | BINDIR="${BINDIR}" sh -s ${ARDUINO_CLI_VERSION} \
     && arduino-cli version
 
+# KISS-ICP LiDAR odometry, not packaged for Humble, 
+# so built from source; dependencies come from apt
+ARG KISS_ICP_VERSION=v1.3.0
+RUN apt update \
+    && apt install -y --no-install-recommends \
+    ros-humble-sophus \
+    robin-map-dev \
+    libtbb-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    && git clone --depth 1 --branch ${KISS_ICP_VERSION} https://github.com/PRBonn/kiss-icp.git /opt/kiss_ws/src/kiss-icp \
+    && cd /opt/kiss_ws \
+    && /bin/bash -c "source /opt/ros/humble/setup.bash && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release" \
+    && rm -rf /opt/kiss_ws/build /opt/kiss_ws/log \
+    && echo "source /opt/kiss_ws/install/setup.bash" >> /root/.bashrc
+
 CMD ["bash"]
