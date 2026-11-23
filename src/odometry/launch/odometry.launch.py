@@ -18,11 +18,12 @@ from launch_ros.actions import Node
 # Check: turning counter-clockwise gives positive /imu/gyro z, and in RViz (fixed frame
 # base_link) the wall in front of the robot is at +x on /lidar/cloud_base.
 LIDAR_MOUNT = {
-    'lidar_mount_confirmed': False,  # set to True only after measuring the six values below
-    'lidar_x_m': 0.0,                # lidar center relative to base_link
-    'lidar_y_m': 0.0,
-    'lidar_z_m': 0.0,                # height above the ground
-    'lidar_roll_rad': 0.0,           # applied roll (x), then pitch (y), then yaw (z)
+    'lidar_mount_confirmed': False,     # set to True only after measuring the six values below
+    'lidar_x_m': 0.2032,                # lidar center relative to base_link (BIG ESTIMATES FOR NOW REFINE PLS)
+    'lidar_y_m': 0.0,                   # SIDE TO SIDE EVENNESS (BIG ESTIMATES FOR NOW REFINE PLS)
+    'lidar_z_m': 0.7366,                # height above the ground (BIG ESTIMATES FOR NOW REFINE PLS)
+    # THESE ARE FOR ANGLES OF LIDAR, JUST ASSUMING ALL IS BUILT WELL, MAY NEED TO CHANGE W/ BETTER MEASUREMENTS
+    'lidar_roll_rad': 0.0,              # applied roll (x), then pitch (y), then yaw (z)
     'lidar_pitch_rad': 0.0,
     'lidar_yaw_rad': 0.0,
 }
